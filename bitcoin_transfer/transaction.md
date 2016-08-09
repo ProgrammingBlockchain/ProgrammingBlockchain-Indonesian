@@ -1,39 +1,41 @@
-## Transaction {#transaction}
+## Transaksi {#transaction}
 
-> ([Mastering Bitcoin](https://github.com/bitcoinbook/bitcoinbook/)) Transactions are the most important part of the bitcoin system. Everything else in bitcoin is designed to ensure that transactions can be created, propagated on the network, validated, and finally added to the global ledger of transactions (the blockchain). Transactions are data structures that encode the transfer of value between participants in the bitcoin system. Each transaction is a public entry in bitcoin’s blockchain, the global double-entry bookkeeping ledger.
+> \([Mastering Bitcoin](https://github.com/bitcoinbook/bitcoinbook/)\) Transaksi adalah bagian terpenting dari sistem bitcoin. Segala sesuatu yang lain di bitcoin dirancang untuk dapat memastikan bahwa transaksi itu dapat dilakukan, disebar ke dalam jaringan, divalidasi, dan kemudian ditambahkan ke ledger \(Blockchain\). Transaksi adalah struktur data yang menyandikan transfer nilai antar pengguna di dalam sistem bitcoin. Setiap transaksi merupakan entri publik di blockchain bitcoin ini. Menjadi sebuah pembukuan transaksi besar secara global.
 
-A transaction may have no recipient, or it may have several. **The same can be said for senders!** On the Blockchain, the sender and recipient are always abstracted with a ScriptPubKey, as we demonstrated in previous chapters.  
+Sebuah transaksi mungkin tidak punya penerima, atau bahkan mempunyai penerima lebih dari satu. **Begitu juga halnya dengan pengirim**. Pada Blockchain, pengirim dan penerima diabstraksikan dengan ScriptPubKey, seperti yang telah ditunjukkan pada bab sebelumnya.
 
-If you use Bitcoin Core your Transactions tab will show the transaction, like this:
+Jika anda menggunakan Bitcoin Core, transaksi anda akan menampilkan seperti ini:
 
-![](../assets/BitcoinCoreTransaction.png)  
+![](../assets/BitcoinCoreTransaction.png)
 
-For now we are interested in the **Transaction ID**. In this case, it is ```f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94```  
+Sekarang, kita jadi tertarik dengan munculnya **Transaction ID** pada transaksi diatas. Transaksi ID tersebut diatas adalah:
 
-> **Note:** The TransactionId is defined by SHA256(SHA256(txbytes))
+`f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94`
 
-> **Note:** Do NOT use the TransactionId to handle unconfirmed transactions. The TransactionId can be manipulated before it is confirmed. This is known as “Transaction Malleability.”
+> **Catatan:** TransactionId is didefinisikan oleh SHA256\(SHA256\(txbytes\)\)
+> 
+> **Catatan:** JANGAN menggunakan TransactionId untuk menangani transaksi yang belum dikonfirmasi. TransactionId dapat dimanipulasi sebelum transaksi itu dikonfirmasi. Hal ini disebut dengan “Transaction Malleability.”
 
-You can review the transaction on a blockexplorer like Blockchain.info: https://blockchain.info/tx/f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94 
-But as a developer you will probably want a service that is easier to query and parse.  
-As a C# developer and an NBitcoin user Nicolas Dorier's [QBit Ninja](http://docs.qbitninja.apiary.io/) will definitely be your best choice. It is an open source web service API to query the blockchain and for tracking wallets.  
-QBit Ninja depends on [NBitcoin.Indexer](https://github.com/MetacoSA/NBitcoin.Indexer) which rely on Microsoft Azure Storage. C# developers are expected to use the [NuGet client package](http://www.nuget.org/packages/QBitninja.Client) instead of developping a wrapper around this API.  
+Anda dapat melihat transaksi itu pada blockexplorer seperti di blockchain.info: [https:\/\/blockchain.info\/tx\/f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94](https://blockchain.info/tx/f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94) 
+Namun sebagai seorang developer, anda mungkin menginginkan layanan yang lebih mudah untuk _query_ dan _parse_. 
+Sebagai developer C\# dan pengguna NBitcoin, Nicolas Dorier's di [QBit Ninja](http://docs.qbitninja.apiary.io/) akan menjadi pilihan terbaik anda. Ini adalah layanan web API open source, untuk query blockchain dan melacak wallet.   
+QBit Ninja tergantung pada [NBitcoin.Indexer](https://github.com/MetacoSA/NBitcoin.Indexer) di relay dari Microsoft Azure Storage. Developer C\# diharapkan menggunakan [NuGet client package.](http://www.nuget.org/packages/QBitninja.Client)
 
-If you go to http://api.qbit.ninja/transactions/f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94 you will see the raw bytes of your transaction.  
+Jika anda melihat di sini: [http:\/\/api.qbit.ninja\/transactions\/f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94](http://api.qbit.ninja/transactions/f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94) Anda akan melihat _raw bytes_ dari transaksi anda.
 
-![](../assets/RawTx.png)  
+![](../assets/RawTx.png)
 
-You can parse the transaction from hex with the following code:  
+Anda dapat parse hex transaksi itu dengan kode berikut:
 
 ```cs
 Transaction tx = new Transaction("0100000...");
 ```
 
-Quickly close the tab, before it scares you away, QBit Ninja queries the API and parses the information so go ahead and install **QBitNinja.Client** NuGet package.  
+Lalu cepatlah menutup tab tersebut, sebelum membuat anda ketakutan. QBit Ninja melakukan queri dari API dan memparse informasi tersebut, jadi anda bisa melanjutkannya dan install **QBitNinja.Client** NuGet package.
 
-![](../assets/QBitNuGet.png)  
+![](../assets/QBitNuGet.png)
 
-Query the transaction by id:
+Query transaksi by id:
 
 ```cs
 // Create a client
@@ -42,24 +44,24 @@ QBitNinjaClient client = new QBitNinjaClient(Network.Main);
 var transactionId = uint256.Parse("f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94");
 // Query the transaction
 GetTransactionResponse transactionResponse = client.GetTransaction(transactionId).Result;
-```  
+```
 
-The type of **transactionResponse** is **GetTransactionResponse**. It lives under QBitNinja.Client.Models namespace. You can get **NBitcoin.Transaction** type from it:  
+Tipe **transactionResponse** adalah **GetTransactionResponse**. Dijalankan melalui QBitNinja.Client.Models namespace. Anda bisa mendapatkan jenis **NBitcoin.Transaction** tersebut di sini:
 
 ```cs
 NBitcoin.Transaction transaction = transactionResponse.Transaction;
-```  
- 
-Let's see an example getting back the transaction id with both classes:  
+```
+
+Sekarang mari kita lihat contoh untuk mendapat kembali ID transaksi itu dengan kedua \_classes \_ini:
 
 ```cs
 Console.WriteLine(transactionResponse.TransactionId); // f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94
 Console.WriteLine(transaction.GetHash()); // f13dc48fb035bbf0a6e989a26b3ecb57b84f85e0836e777d6edf60d87a4a2d94
-```  
+```
 
-**GetTransactionResponse** has additional information about the transaction like the value and scriptPubKey of the inputs being spent in the transaction.
+**GetTransactionResponse** memiliki informasi tambahan tentang transaksi, seperti nilai dan scriptPubKey pada _inputs_ yang akan dibelanjakan dalam sebuah transaksi.
 
-The relevant parts for now are the **inputs** and **outputs**. You can see that out 13.19683492 Bitcoin has been sent to a ScriptPubKey:
+Jadi yang paling beralasi pada hal ini adalah tentang **inputs** dan **outputs**. Anda dapat melihat sejumlah 13.19683492 Bitcoin telah terkirim pada ScriptPubKey:
 
 ```cs
 List<ICoin> receivedCoins = transactionResponse.ReceivedCoins;
@@ -74,12 +76,12 @@ foreach (var coin in receivedCoins)
     Console.WriteLine(address);
     Console.WriteLine();
 }
-```  
+```
 
-We have written out some information about the RECEIVED COINS using QBitNinja's GetTransactionResponse class.
-**Exercise**: Write out the same information about the SPENT COINS using QBitNinja's GetTransactionResponse class!  
+Kami juga menulis beberapa informasi tentang RECEIVED COINS menggunakan QBitNinja's _class_ GetTransactionResponse.
+**Latihan**: Tuliskan informasi yang sama tentang SPENT COINS menggunakan _class_ QBitNinja's GetTransactionResponse!
 
-Let's see how we can get the same information about the RECEIVED COINS using NBitcoin's Transaction class.
+Lalu mari kita lihat bagaimana kita bisa mendapatkan informasi yang sama tentang RECEIVED COINS menggunakan \_class \_NBitcoin's Transaction.
 
 ```cs
 var outputs = transaction.Outputs;
@@ -94,9 +96,9 @@ foreach (TxOut output in outputs)
     Console.WriteLine(address);
     Console.WriteLine();
 }
-```  
+```
 
-Now let's examine the **inputs**. If you look at them you will notice a previous output is referenced. Each input shows you which previous out has been spent in order to fund this transaction.
+Sekarang mari kita periksa di **inputs**. Jika anda melihatnya, maka disana akan ada referensi output sebelumnya. Jadi pada setiap input dapat menunjukkan pengeluaran sebelumnya yang telah ditransaksikan pada transaksi ini.
 
 ```cs
 var inputs = transaction.Inputs;
@@ -107,57 +109,58 @@ foreach (TxIn input in inputs)
     Console.WriteLine(previousOutpoint.N); // idx of out from prev tx, that has been spent in the current tx
     Console.WriteLine();
 }
-```  
+```
 
-The terms **TxOut**, **Output** and **out** are synonymous.  
-Not to be confused with **OutPoint**, but more on this later.
+Istilah **TxOut**, **Output** dan **out** maknanya sama.  
+Jadi tidak perlu bingung dengan **OutPoint**, akan dijelaskan lebih lanjut.
 
-In summary, the TxOut represents an amount of bitcoin and a **ScriptPubKey**. (Recipient)  
+Singkatnya, TxOut merupakan jumlah bitcoin dan **ScriptPubKey**. \(Penerima\)
 
 ![](../assets/TxOut.png)  
-As illustration let's create a txout with 21 bitcoin from the first ScriptPubKey in our current transaction:  
+Sebagai ilustrasinya, mari kita membuat sebuah txout dengan 21 bitcoin dari ScriptPubKey pertama dalam transaksi kami saat ini:
 
-```cs  
+```cs
 Money twentyOneBtc = new Money(21, MoneyUnit.BTC);
 var scriptPubKey = transaction.Outputs.First().ScriptPubKey;
 TxOut txOut = new TxOut(twentyOneBtc, scriptPubKey);
-```  
+```
 
-Every **TxOut** is uniquely addressed at the blockchain level by the ID of the transaction which include it and its index inside it. We call such reference an **Outpoint**.  
+Setiap **TxOut** secara unik menunjuk address di level blockchain oleh ID transaksi yang meliputinya, dan juga index di dalamnya. kami menyebut referensi tersebut dengan **Outpoint**.
 
 ![](../assets/OutPoint.png)
 
-For example, the **Outpoint** of the **TxOut** with 13.19683492 BTC in our transaction is (4788c5ef8ffd0463422bcafdfab240f5bf0be690482ceccde79c51cfce209edd, 0).  
+Sebagai contoh, **Outpoint** dari **TxOut** dengan 13.19683492 BTC pada transaksi kami adalah \(4788c5ef8ffd0463422bcafdfab240f5bf0be690482ceccde79c51cfce209edd, 0\).
 
 ```cs
 OutPoint firstOutPoint = spentCoins.First().Outpoint;
 Console.WriteLine(firstOutPoint.Hash); // 4788c5ef8ffd0463422bcafdfab240f5bf0be690482ceccde79c51cfce209edd
 Console.WriteLine(firstOutPoint.N); // 0
-```  
+```
 
-Now let’s take a closer look at the inputs (aka **TxIn**) of the transaction:  
+Sekarang mari kita lihat lebih dekat pada input \(di **TxIn**\) dari transaksi itu:
 
 ![](../assets/TxIn.png)
 
-The **TxIn** is composed of the **Outpoint** of the **TxOut** being spent and of the **ScriptSig** ( we can see the ScriptSig as the “Proof of Ownership”) In our transaction there are actually 9 inputs.  
+**TxIn** terdiri dari **Outpoint** pada **TxOut** yang telah dikeluarkan atau dibelanjakan dari **ScriptSig** \( kita dapat melihat disini bahwa ScriptSig berfungsi sebagai “Proof of Ownership”\) Pada transaksi kami yang sebenarnya, ada 9 input.
 
 ```cs
 Console.WriteLine(transaction.Inputs.Count); // 9
-```  
+```
 
-With the previous outpoint's transaction ID we can review the information associated with that transaction.  
+Dengan ID transaksi outpoint sebelumnya, kita bisa melihat informasi yang berkaitan dengan transaksi tersebut.
+
 ```cs
 OutPoint firstPreviousOutPoint = transaction.Inputs.First().PrevOut;
 var firstPreviousTransaction = client.GetTransaction(firstPreviousOutPoint.Hash).Result.Transaction;
 Console.WriteLine(firstPreviousTransaction.IsCoinBase); // False
-```  
+```
 
-We could continue to trace the transaction IDs back in this manner until we reach a **coinbase transaction**, the transaction including the newly mined coin by a miner.  
-**Exercise:** Follow the first input of this transaction and its ancestors until you find a coinbase transaction!  
-Hint: After a few minutes and 30-40 transaction, I gave up tracing back.  
-Yes, you've guessed right, it is not the most efficient way to do this, but a good exercise.  
+Kita bisa untuk terus melanjutkan melacak ID transaksi hingga kembali sampai kepada transaksi coinbase, transaksi koin baru yang ditambang oleh penambang.   
+**Latihan:** Ikuti input pertama pada transaksi ini sampai anda mencapai transaksi coinbase!  
+Petunjuk: Setelah mencoba mengikuti hingga 30-40 transaksi, saya menyerah.  
+Ya, tebakan anda benar, hal itu bukanlah cara yang efektif untuk melakukannya, namun menjadi sebuah latihan yang baik.
 
-In our example, the outputs were for a total of 13.19**70**3492 BTC.  
+Pada contoh kami, jumlah output adalah 13.19**70**3492 BTC.
 
 ```cs
 Money spentAmount = Money.Zero;
@@ -166,18 +169,19 @@ foreach (var spentCoin in spentCoins)
     spentAmount = (Money)spentCoin.Amount.Add(spentAmount);
 }
 Console.WriteLine(spentAmount.ToDecimal(MoneyUnit.BTC)); // 13.19703492
-```  
+```
 
-In this transaction 13.19**68**3492 BTC were received.  
+Pada transaksi tersebut, sejumlah 13.19**68**3492 BTC telah diterima.
 
-**Exercise:** Get the total received amount, as I have been done with the spent amount.  
+**Latihan:** Dapatkan jumlah total yang diterima, seperti yang telah saya lakukan dengan sejumlah pengeluaran.
 
-That means 0.0002 BTC (or 13.19**70**3492 - 13.19**68**3492) is not accounted for! The difference between the inputs and outputs are called **Transaction Fees** or **Miner’s Fees**. This is the money that the miner collects for including a given transaction in a block.  
+Artinya, sejumlah 0.0002 BTC \(atau 13.19**70**3492 - 13.19**68**3492\) tidak dihitung! Perbedaan antara input dan output disebut dengan **Transaction Fees** \(biaya transaksi\) atau **Miner’s Fees **\(biaya miner\). Biaya ini adalah sejumlah ongkos yang diberikan kepada penambang untuk memproses transaksi itu, hingga memasukkannya ke dalam sebuah block.
 
 ```cs
 var fee = transaction.GetFee(spentCoins.ToArray());
 Console.WriteLine(fee);
 ```
 
-You should note that a **coinbase transaction** is the only transaction whose value of output are superior to the value of input. This effectively correspond to coin creation. So by definition there is no fee in a coinbase transaction. The coinbase transaction is the first transaction of every block.  
-The consensus rule enforce that the sum of output's value in the coinbase transaction does not exceed the sum of transaction fees in the block plus the mining reward.  
+Perlu dicatat disini, **transaksi coinbase **adalah satu-satunya transaksi yang nilai outpunya lebih superior dibandingkan dengan nilai input. Karena transaksi itu adalah transaksi penciptaan koin baru. Artinya, tidak ada biaya pada transaksi coinbase tersebut. Transaksi coinbase ini, adalah transaksi pertama yang ada dalam setiap block.  
+Dikatakan nilai output lebih istimewa dari nilai input, karena berdasarkan aturan konsensus yang ada, jumlah nilai output dalam transaksi coinbase tidak melebihi jumlah total biaya transaksi, ditambah dengan reward block. 
+

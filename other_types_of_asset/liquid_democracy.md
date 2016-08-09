@@ -1,40 +1,40 @@
 ## Liquid Democracy {#liquid-democracy}
 
-### Overview {#overview}
+### Ikhtisar {#overview}
 
-This part is a purely conceptual exercise of one application of colored coins.
+Pada pembahasan ini adalah murni latihan secara konseptual, salah satu pengaplikasian dari colored coins.
 
-Let’s imagine a company where some decisions are taken by a board of investors after a vote.
+Mari kita bayangkan pada sebuah perusahaan yang mengambil beberapa keputusan oleh dewan investor setelah melakukan pemungutan suara.
 
-*   Some investors do not know enough about a topic, so they would like to delegate decisions about some subjects to someone else.
-*   There is potentially a huge number of investors.
-*   As the CEO, you want the ability to sell voting power for financing the company.
-*   As the CEO, you want the ability to cast a vote when you decide.
+* Beberapa investor mungkin tidak cukup mengetahui tentang sebuah topik, sehingga mereka ingin mendelegasikan keputusan tentang beberapa hal kepada orang lain. 
+* Berpotensi pada sejumlah besar investor. 
+* Sebagai seorang CEO, anda ingin mempunyai kemampuan untuk menjual hak suara untuk pembiayaan perusahaan. 
+* Sebagai seorang CEO, anda ingin memberikan suara ketika anda harus memutuskan sesuatu. 
 
-How Colored Coins can help to organize such a vote transparently?
+Bagaimana Colored Coins dapat membantu memberikan suara secara transparan?
 
-But before beginning, let’s talk about some downside of voting on the Blockchain:
+Sebelum memulai, mari kita berbicara tentang beberapa _downside \(kekurangan\)_ dari sebuah voting dalam Blockchain:
 
-*   Nobody knows the real identity of a voter.
-*   Miners could censor (even if it would be provable, and not in their interest.)
-*   Even if nobody knows the real identity of the voter, behavioral analysis of a voter across several vote might reveal his identity.
+* Tidak ada yang mengetahui identitas asli pemberi suara. 
+* Penambang bisa menyensor \(bahkan jika itu akan bisa dibuktikan, tidak dalam kepentingan mereka\)
+* Meski tidak ada yang mengetahui identitas asli pemberi voting, analisis perilaku pemilih pada beberapa orang mungkin bisa mengungkapkan identitasnya. 
 
-Whether these points are relevant or not is up to the vote organizer to decide.
+Apakah poin-poin tersebut dianggap cukup relevan atau tidak, itu terserah penyelenggara pemungutan suara untuk memutuskannya.
 
-Let’s take an overview of how we would implement that.
+Sekarang mari kita melihat gambaran bagaimana kita dapat melakukannya:
 
-### Issuing voting power {#issuing-voting-power}
+### Menerbitkan voting power {#issuing-voting-power}
 
-Everything start with the founder of the company (let’s call him Boss) wanting to sell “decision power” in his company to some investors. The decision power can take the shape of a colored coin that we will call for the sake of this exercise a “Power Coin”.
+Tentu saja, semua akan bermula dari keputusan pendiri perusahaan \(atau kita bisa menyebutnya Bos\) yang ingin menjual “decision power” dalam perusahaannya kepada beberapa investor. Kekuatan keputusan ini \(decision power\) bisa mengambil bentuk dari colored coin yang dapat kita gunakan sebagai latihan untuk membuat “Power Coin” \(sebut saja istilah latihan kali ini dengan nama Power Coin\).
 
-Let’s represent it in purple:  
+Mari kita memulai:
 
-![](../assets/PowerCoin.png)  
+![](../assets/PowerCoin.png)
 
-Let’s say that three persons are interested, Satoshi, Alice and Bob. (Yes, them again)  
-So Boss decides to sell each Power Coin at 0.1 BTC each.
+Katakan saja bahwa ada tiga orang yang tertarik, Satoshi, Alice and Bob. \(Ya, nama ketiganya sering dijadikan contoh untuk banyak hal\)  
+Jadi kemudian Bos memutuskan untuk menjual setiap Power Coin dengan nilai seharga 0.1 BTC pada masing-masingnya.
 
-Let’s start funding some money to the ```powerCoin``` address, ```satoshi```, ```alice``` and ```bob```.  
+Mari kita mulai mendanai sejumlah uang untuk address`powerCoin`, `satoshi`, `alice` dan `bob`.
 
 ```cs
 var powerCoin = new Key();
@@ -54,11 +54,11 @@ var init = new Transaction()
 
 var repo = new NoSqlColoredTransactionRepository();
 repo.Transactions.Put(init);
-```  
+```
 
-Imagine that Alice buy 2 Power coins, here is how to create such transaction.  
+Kita bayangkan jika semisal Alice membeli 2 Power coin, jadi begini cara membuat transaksinya.
 
-![](../assets/Power2Alice.png)  
+![](../assets/Power2Alice.png)
 
 ```cs
 var issuance = GetCoins(init,powerCoin)
@@ -78,36 +78,36 @@ var toAlice =
     .SetChange(alice)
     .BuildTransaction(true);
 repo.Transactions.Put(toAlice);
-```  
+```
 
-In summary, powerCoin issues 2 Power Coins to Alice and send the change to himself. Likewise, Alice send 0.2 BTC to powerCoin and send the change to herself.
+Singkat kata, powerCoin menerbitkan 2 Power Coins kepada Alice dan mengirimkan kembaliannya kepada dirinya sendiri. Demikian juga, saat Alice mengirim sejumlah 0.2 BTC kepada powerCoin dan mengirimkan jumlah kembalian untuk dirinya sendiri.
 
-Where **GetCoins** is  
+Sedangkan **GetCoins** adalah
 
 ```cs
 private IEnumerable<Coin> GetCoins(Transaction tx, Key owner)
 {
     return tx.Outputs.AsCoins().Where(c => c.ScriptPubKey == owner.ScriptPubKey);
 }
-```  
+```
 
-For some reason, Alice, might want to sell some of her voting power to Satoshi.  
+Untuk beberapa alasan, Alice, mungkin ingin menjual beberapa bagian dari voting power miliknya kepada Satoshi.
 
-![](../assets/PowerCoin2.png)  
+![](../assets/PowerCoin2.png)
 
-You can note that I am double spending the coin of Alice from the **init** transaction.  
-****Such thing would not be accepted on the Blockchain. However, we have not seen yet how to retrieve unspent coins from the Blockchain easily, so let’s just imagine for the sake of the exercise that the coin was not double spent.
+Anda mungkin bisa mencatat bahwa saya melakukan _double spending_ koin dari Alice pada **init** transaksi.  
+\_\*\*\_Hal tersebut tidak akan diterima di Blockchain. Namun, kami belum melihat bagaimana untuk mengambil koin yang belum terpakai itu dari Blockchain dengan mudah, jadi bayangkan saja demi latihan kita, pada koin yang bukan merupakan double spent.
 
-Now that Alice and Satoshi have some voting power, let’s see how Boss can run a vote.
+Sekarang Alice dan Satoshi telah memiliki beberapa hak suara, mari kita lihat bagaimana Boss dapat menjalankan proses pemungutan suara tersebut.
 
-### Running a vote {#running-a-vote}
+### Menjalankan voting {#running-a-vote}
 
-By consulting the Blockchain, Boss can at any time know **ScriptPubKeys** which owns Power Coins.  
-So he will send Voting Coins to these owner, proportionally to their voting power, in our case, 1 voting coin to Alice and 1 voting coin to Satoshi.  
+Dengan mengkonsultasikannya langsung kepada Blockchain, Bos dapat melihat dan tahu **ScriptPubKeys** yang memiliki Power Coins.  
+Jadi dia akan mengirim _Voting Coins_ kepada pemilik, secara proporsional atas hak suara mereka. Dalam hal ini, 1 suara untuk Alice, dan 1 suara untuk Satoshi.
 
 ![](../assets/PowerCoin3.png)
 
-First, I need to create some funds for **votingCoin**.  
+Pertama, saya harus membuat beberapa dana untuk **votingCoin**.
 
 ```cs
 var votingCoin = new Key();
@@ -119,9 +119,9 @@ var init2 = new Transaction()
     }
 };
 repo.Transactions.Put(init2);
-```  
+```
 
-Then, issue the voting coins.  
+Lalu, menerbitkan _voting coins_.
 
 ```cs
 issuance = GetCoins(init2, votingCoin).Select(c => new IssuanceCoin(c)).ToArray();
@@ -135,15 +135,15 @@ var toVoters =
     .SetChange(votingCoin)
     .BuildTransaction(true);
 repo.Transactions.Put(toVoters);
-```  
+```
 
-### Vote delegation {#vote-delegation}
+### Delegasi voting {#vote-delegation}
 
-The problem is that the vote concern some financial aspect of the business, and Alice is mostly concerned by the marketing aspect.
+Masalahnya, pada beberapa hal pemungutan suara tersebut tidak terlepas dari aspek keuangan dan bisnis, Alice memperhatikan akpek pemasarannya.
 
-Her decision is to handout her voting coin to someone she trusts having a better judgment on financial matter. She chooses to delegate her vote to Bob.  
+Keputusannya adalah untuk menaruh voting coin kepada orang lain yang dipercaya lebih sesuai untuk memberikan penilaian yang lebih baik tentang masalah keuangan. Sehingga Alice kemudian memilih untuk mendelegasikan suaranya kepada Bob.
 
-![](../assets/PowerCoin4.png)  
+![](../assets/PowerCoin4.png)
 
 ```cs
 var aliceVotingCoin = ColoredCoin.Find(toVoters,repo)
@@ -157,22 +157,22 @@ var toBob =
     .SendAsset(bob, new AssetMoney(votingCoin, 1))
     .BuildTransaction(true);
 repo.Transactions.Put(toBob);
-```  
+```
 
-You can notice that there is no **SetChange** the reason is that the input colored coin is spent entirely, so nothing is left to be returned.
+Anda dapat melihat bahwa tidak ada **SetChange** alasannya adalah agar input tersebut dapat dihabiskan seluruhnya, sehingga tidak ada lagi sisa yang akan dikembalikan.
 
 ### Voting {#voting}
 
-Imagine that Satoshi is too busy and decide not to vote. Now Bob must express his decision.  
-The vote concerns whether the company should ask for a loan to the bank for investing into new production machines.
+Pada saat voting berlangsung, bayangkan lagi jika ternyata Satoshi terlalu sibuk sehingga ia memutuskan untuk tidak memberikan voting. Sedangkan Bob harus mengungkapkan keputusannya.   
+Pada voting tersebut, memutuskan apakah perusahaan harus meminta pinjaman ke bank untuk berinvestasi pada sebuah mesin produksi baru misalnya.
 
-Boss says on the company’s website:
+Bos berkata pada website perusahaannya:
 
-Send your coins to 1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN for yes and to 1F3sAm6ZtwLAUnj7d38pGFxtP3RVEvtsbV for no.
+Kirimkan koin anda ke address 1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN untuk voting **"yes"** dan address 1F3sAm6ZtwLAUnj7d38pGFxtP3RVEvtsbV untuk voting** "no"**.
 
-Bob decides that the company should take the loan:  
+Bob memutuskan bahwa perusahaan harus mengambil pinjaman:
 
-![](../assets/PowerCoin5.png)  
+![](../assets/PowerCoin5.png)
 
 ```cs
 var bobVotingCoin = ColoredCoin.Find(toVoters, repo)
@@ -187,20 +187,20 @@ var vote =
     .SendAsset(BitcoinAddress.Create("1HZwkjkeaoZfTSaJxDw6aKkxp45agDiEzN"),
                 new AssetMoney(votingCoin, 1))
     .BuildTransaction(true);
-```  
+```
 
-Now Boss can compute the result of the vote and see 1-Yes 0-No, Yes win, so he takes the loan.  
-Every participants can also count the result by themselves.
+Jadi sekarang bos dapat menghitung hasil pemungutan suara, dan melihat hasil ada 1-Yes 0-No, maka "Yes" menjadi pemenangnya, lalu ia mengambil pinjaman.   
+Setiap partisipan bisa juga melihat dan menghitung hasil pemungutan suara tersebut.
 
-### Alternative: Use of Ricardian Contract {#alternative-use-of-ricardian-contract}
+### Alternatif: Menggunakan Kontrak Ricardian {#alternative-use-of-ricardian-contract}
 
-In the previous exercise, we have supposed that Boss announced the modalities of the vote out of the Blockchain, on the company’s website.
+Pada latihan sebelumnya, kita menyangka bahwa Bos akan mengumumkan modalitas suara secara langsung dari Blockchain, kepada website perusahaannya.
 
-This works great, but Bob need to know that the website exists.
+Ini karya yang besar, tetapi Bob perlu mengetahui bahwa situs tersebut memang ada.
 
-Another solution is to publish the modalities of the vote directly on the Blockchain within an **Asset Definition File**, so some software can automatically get it and present it to Bob.
+Solusi lain untuk mempublikasikan modalitas suara secara langsung pada Blockchain dalam **Asset Definition File**, sehingga beberapa software dapat secara otomatis melihat dan menyampaikannya kepada Bob.
 
-The only piece of code that would have changed is during the issuance of the Voting Coins to voters.  
+Satu-satunya bagian dari kote yang akan berubah saat penerbitan Voting Coins kepada para pemilih adalah:
 
 ```cs
 issuance = GetCoins(init2, votingCoin).Select(c => new IssuanceCoin(c)).ToArray();
@@ -215,14 +215,15 @@ var toVoters =
     .SetChange(votingCoin)
     .BuildTransaction(true);
 repo.Transactions.Put(toVoters);
-```  
+```
 
-In such case, Bob can see that during the issuance of his voting coin, an **Asset Definition File** was published, which is nothing more than a JSON document whose schema is partially [specified in Open Asset](https://github.com/OpenAssets/open-assets-protocol/blob/master/asset-definition-protocol.mediawiki).The schema can be extended to have information about things like:
+Dalam hal ini, Bob dapat melihat bahwa selama penerbitan koin voting, **Asset Definition File** telah dipublikasikan, yang tidak lebih dari sebuah dokumen JSON dengan skema yang sebagian ditentukan dalam [Open Asset](https://github.com/OpenAssets/open-assets-protocol/blob/master/asset-definition-protocol.mediawiki). Skema ini dapat diperpanjang agar bisa memiliki beberapa hal seperti:
 
-*   Expiration of the vote
-*   Destination of the votes for each candidates
-*   Human friendly description of it
+* Masa berakhirnya pemungutan suara
+* Tujuan masing-masing kandidat
+* Deskripsi yang lebih _Human friendly \(bisa dibaca manusia\)_
 
-However, imagine that a hacker wants to cheat the vote. He can always modify the json document (either man in the middle attack, physical access to boss.com, or access to Bob’s machine) so Bob is tricked and send his vote to the wrong candidate.
+Masih belum berakhir, coba bayangkan jika ternyata ada seorang hacker yang ingin mencurangi pemungutan suara tersebut. Dia mungkin dapat memodifikasi file dokumen json tersebut \(misal dengan middle attack, akses fisik langsung di website perusahaan bos, misalnya di boss.com, atau mengakses lewat perangkat yang dimiliki Bob\) jadi Bob akan bisa ditipu dan ia telah memberikan voting pada kandidat yang salah. 
 
-Transforming the **Asset Definition File** into a **Ricardian Contract** by signing it would make any modification immediately detectable by Bob’s software. (See [Proof Of Authenticity](https://github.com/OpenAssets/open-assets-protocol/blob/master/asset-definition-protocol.mediawiki) in the Asset Definition Protocol)
+Mengubah **Asset Definition File** menjadi **Ricardian Contract** dengan menandatanganinya, akan membuat modifikasi itu bisa segera terdeteksi oleh perangkat luanak Bob. \(Lihat [Proof Of Authenticity](https://github.com/OpenAssets/open-assets-protocol/blob/master/asset-definition-protocol.mediawiki) dalam Asset Definition Protocol\)
+

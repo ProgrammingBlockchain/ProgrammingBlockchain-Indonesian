@@ -1,14 +1,12 @@
-## Spend your coin {#spend-your-coin}
+## Membelanjakan koin anda {#spend-your-coin}
 
-So now that you know what a **bitcoin address**, a **ScriptPubKey**, a **private key**, and a **miner** are you will make your first **transaction** by hand.  
+Setelah anda mengetahui apa itu **address** **bitcoin**, **ScriptPubKey**, **private key**, dan **penambang \(miner\), **maka anda juga bisa membuat transaksi pertama anda.
 
-As you proceed through this lesson you will add code line by line as it is presented to build a method that will leave feedback for the book in a Twitter style message.  
+Mari kita mulai dengan melihat sebuah **transaksi** yang mempunyai **TxOut, **yang ingin anda transaksikan. seperti yang telah kita pelajari sebelumnya:
 
-Let’s start by looking at the **transaction** that contains the **TxOut** that you want to spend as we did previously:  
+Buat sebuah **project baru** \(&gt;.net45\) lalu install **QBitNinja.Client** NuGet.
 
-Create a new **Console Project** (>.net45) and install **QBitNinja.Client** NuGet.  
-
-Have you already generated and noted a private key to yourself? Have you already get the corresponding bitcoin address and sent some funds there? If not, don't worry, I quickly reiterate how you can do it:  
+Apakah anda sebelumnya telah generate private key sendiri? Apakah anda telah mengirim sejumlah bitcoin pada address tersebut? jika belum, jangan khawatir, kita akan mengulangi cara tersebut, sehingga anda juga bisa melakukannya:
 
 ```cs
 var network = Network.Main;
@@ -19,11 +17,11 @@ var address = bitcoinPrivateKey.GetAddress();
 
 Console.WriteLine(bitcoinPrivateKey);
 Console.WriteLine(address);
-```  
+```
 
-Note the **bitcoinPrivateKey**, the **address**, send some coins there and note the transaction id (you can find it (probably) in your wallet software or with a blockexplorer, like [blockchain.info](http://blockchain.info/)).  
+Catat **PrivateKey **bitcoin, **address**, kirimkan sejumlah koin disana, dan catat juga ID transaksinya. Anda bisa cek ID transaksi itu di wallet anda, atau di blockexplorer seperti di blockchain.info.
 
-Import your private key:  
+Import private key:
 
 ```cs
 var bitcoinPrivateKey = new 
@@ -33,9 +31,10 @@ var address = bitcoinPrivateKey.GetAddress();
 
 Console.WriteLine(bitcoinPrivateKey); // cSZjE4aJNPpBtU6xvJ6J4iBzDgTmzTjbq8w2kqnYvAprBCyTsG4x
 Console.WriteLine(address); // mzK6Jy5mer3ABBxfHdcxXEChsn3mkv8qJv
-```  
+```
 
-And finally get the transaction info:  
+Lalu ambil informasi transaction:
+
 ```cs
 var client = new QBitNinjaClient(network);
 var transactionId = uint256.Parse("e44587cf08b4f03b0e8b4ae7562217796ec47b8c91666681d71329b764add2e3");
@@ -43,13 +42,14 @@ var transactionResponse = client.GetTransaction(transactionId).Result;
 
 Console.WriteLine(transactionResponse.TransactionId); // e44587cf08b4f03b0e8b4ae7562217796ec47b8c91666681d71329b764add2e3
 Console.WriteLine(transactionResponse.Block.Confirmations);
-```  
+```
 
-Now we have every information for creating our transactions. The main questions are: **from where, to where and how much?**
+Sekarang kita telah mempunyai semua informasi yang dibutuhkan untuk membuat transaksi. Ada sejumlah pertanyaan umum tentang transaksi yang berlangsung: **darimana, kemana, dan berapa jumlahnya?**
 
-### From where?
+### Dari mana?
 
-In our case, we want to spend the second outpoint. Here's how we have figured this out:  
+Dalam hal ini, kita coba mengambil opsi yang kedua pada outpoint. Caranya seperti ini:
+
 ```cs
 var receivedCoins = transactionResponse.ReceivedCoins;
 OutPoint outPointToSpend = null;
@@ -63,9 +63,9 @@ foreach (var coin in receivedCoins)
 if(outPointToSpend == null)
     throw new Exception("TxOut doesn't contain our ScriptPubKey");
 Console.WriteLine("We want to spend {0}. outpoint:", outPointToSpend.N + 1);
-```  
+```
 
-For the payment you will need to reference this outpoint in the transaction. You create a transaction as follows:
+Untuk transaksi pembayaran, anda perlu mereferensikan outpoin di dalam transaksi. Anda bisa membuat transaksi itu seperti ini:
 
 ```cs
 var transaction = new Transaction();
@@ -73,31 +73,21 @@ transaction.Inputs.Add(new TxIn()
 {
     PrevOut = outPointToSpend
 });
-```  
+```
 
-### To where?
+### Kemana?
 
-Do you remember the main questions? **From where, to where and how much?**  
-Constructing **TxIn** and adding to the transaction was the answer the "from where" question.  
-Constructing **TxOut** and adding to the transaction is the answer for the remaining ones.  
+Untuk menjawab beberapa pertanyaan **darimana, kemana, dan berapa jumlahnya?**   
+Buatlah **TxIn** dan tambahkan ke dalam transaksi. Dan itulah jawaban dari pertanyaan "darimana".  
+Buatlah **TxOut** dan tambahkan itu kedalam transaksi untuk menjawab dua pertanyaan lainnya.
 
-The donation address of this book is: [1KF8kUVHK42XzgcmJF4Lxz4wcL5WDL97PB](https://blockchain.info/address/1KF8kUVHK42XzgcmJF4Lxz4wcL5WDL97PB)  
-This money goes into my "Coffee and Sushi Wallet" that will keep me fed and compliant while writing the rest of the book.  
-If you succeed to complete this challange you will be able to find your contribution among **Hall of the Makers** on http://n.bitcoin.ninja/ (ordered by generosity).  
-```cs
-var hallOfTheMakersAddress = new BitcoinPubKeyAddress("1KF8kUVHK42XzgcmJF4Lxz4wcL5WDL97PB");
-```  
-If you are working on the testnet, send the testnet coins to any testnet address.
-```cs
-var hallOfTheMakersAddress = BitcoinAddress.Create("mzp4No5cmCXjZUpf112B1XWsvWBfws5bbB");
-```  
+### Berapa jumlahnya?
 
-### How much?
-If you want to send **0.5 BTC** from a **transaction input** with **1 BTC** you actually have to spend all!   
-As the diagram shows below, your **transaction output** specifies  **0.5** BTC to Hall of The Makers and **0.4999** back to you.  
-What happens to the remaining **0.0001 BTC**? This is the miner fee in order to incentivize them to add this transaction into their next block.
+Misalnya jika anda ingin mengirim **0.5 BTC** dari sebuah **input transaksi** sedangkan balance anda **1 BTC, **maka sebenarnya anda mengirimkan seluruh koin anda \(**1 BTC**\)!   
+Contohnya bisa dilihat pada diagram di bawah, **output transaksi** anda** output** dituliskan **0.5** BTC kepada penerima \(Hall of The Makers\) dan **0.4999** kembali ke anda. Jadi pada dasarnya, saat anda mengirim koin 0,5 BTC, anda mengirimkan semua 1 BTC, baru sisanya dikembalikan. 
+Lalu bagaimana dengan yang **0.0001 BTC**? Itu adalah fee miner sebagai insentifnya, karena telah memasukkan transaksi anda ke block baru.
 
-![](../assets/SpendTx.png)  
+![](../assets/SpendTx.png)
 
 ```cs
 TxOut hallOfTheMakersTxOut = new TxOut()
@@ -114,10 +104,10 @@ TxOut changeBackTxOut = new TxOut()
 
 transaction.Outputs.Add(hallOfTheMakersTxOut);
 transaction.Outputs.Add(changeBackTxOut);
-```  
+```
 
-We can do some finetuning here.  
-You can check the address on a blockexplorer I am working with on this whole chapter example (I am working on the testnet):   http://tbtc.blockr.io/address/info/mzK6Jy5mer3ABBxfHdcxXEChsn3mkv8qJv  
+Kita juga bisa melakukan beberapa _tuning_ disini.   
+Kami telah mencobanya di testnet. Anda bisa melihatnya disini:   [http:\/\/tbtc.blockr.io\/address\/info\/mzK6Jy5mer3ABBxfHdcxXEChsn3mkv8qJv](http://tbtc.blockr.io/address/info/mzK6Jy5mer3ABBxfHdcxXEChsn3mkv8qJv)
 
 ```cs
 // How much you want to TO
@@ -133,7 +123,8 @@ var txInAmount = receivedCoins[(int) outPointToSpend.N].TxOut.Amount;
 Money changeBackAmount = txInAmount - hallOfTheMakersAmount - minerFee;
 ```
 
-Let's add our calculated values to our TxOuts:  
+Lalu menambahkkan kalkulasi nilai pada TxOuts:
+
 ```cs
 TxOut hallOfTheMakersTxOut = new TxOut()
 {
@@ -146,18 +137,19 @@ TxOut changeBackTxOut = new TxOut()
     Value = changeBackAmount,
     ScriptPubKey = bitcoinPrivateKey.ScriptPubKey
 };
-```  
+```
 
-And add them to our transaction:  
+Kemudian menambahkannya ke dalam transaksi:
+
 ```cs
 transaction.Outputs.Add(hallOfTheMakersTxOut);
 transaction.Outputs.Add(changeBackTxOut);
-```  
+```
 
-### Message on The Blockchain
+### Pesan Di Dalam Blockchain
 
-Now add your feedback! This must be less than 40 bytes, or it will crash the application.  
-This feedback, along with your transaction will appear (after transaction is confirmed) in the [Hall of The Makers](http://n.bitcoin.ninja/). 
+Sekarang coba tambahkan pesan feedback! Pesan ini tidak boleh lebih dari 40 bytes, atau membuat aplikasi itu crash.  
+Pesan feedback ini, dapat dicantumkan di dalam transaksi, dan akan muncul \(setelah transaksi itu dikonfirmasi\).
 
 ```cs
 var message = "nopara73 loves NBitcoin!";
@@ -167,10 +159,10 @@ transaction.Outputs.Add(new TxOut()
     Value = Money.Zero,
     ScriptPubKey = TxNullDataTemplate.Instance.GenerateScriptPubKey(bytes)
 });
-```  
+```
 
-To sum up take a look at my whole transaction before signing:  
-I have 3 **TxOut**, 2 with **value**, 1 without **value** (with the message). You can notice the differences between the **scriptPubKey**s of the "normal" **TxOut**s and the **scriptPubKey** of the **TxOut** with the message:  
+Lebih jelasnya, coba lihat contoh keseluruhan transaksi yang telah dilakukan ini, sebelum itu ditandatangani:  
+Saya punya 3 **TxOut**, 2 dengan **value**, 1 tanpa **value** \(namun ada pesan\). Anda bisa melihat perbedaan antara **scriptPubKey**s dari sebuah **TxOut**s yang normal, dan **scriptPubKey** dari **TxOut** yang dilampiri pesan:
 
 ```json
 {
@@ -204,41 +196,44 @@ I have 3 **TxOut**, 2 with **value**, 1 without **value** (with the message). Yo
     }
   ]
 }
-```  
+```
 
-Take a closer look at **TxIn**. We have **prev_out** and **scriptSig** there.  
-**Exercise:** try to figure out what will be and how to get the **scriptSig** in our code before you read further!  
+Lihat lebih detail pada **TxIn**. Kita punya **prev\_out** dan **scriptSig** disana.  
+**Latihan:** Coba anda cari bagaimana caranya untuk mendapat **scriptSig** sebelum anda membaca lebih jauh!
 
-Let's check out the **hash** of **prev_out** in a blockexplorer: http://tbtc.blockr.io/tx/info/e44587cf08b4f03b0e8b4ae7562217796ec47b8c91666681d71329b764add2e3  
-In **prev_out** **n** is 1. Since we are indexing from 0, this means I want to spend the second output of the transaction.  
-In the blockexplorer we can see the corresponding address is ```mzK6Jy5mer3ABBxfHdcxXEChsn3mkv8qJv``` and I can get the scriptSig from the address like this:  
+Coba lihat **hash** dari **prev\_out** di blockexplorer: [http:\/\/tbtc.blockr.io\/tx\/info\/e44587cf08b4f03b0e8b4ae7562217796ec47b8c91666681d71329b764add2e3](http://tbtc.blockr.io/tx/info/e44587cf08b4f03b0e8b4ae7562217796ec47b8c91666681d71329b764add2e3)  
+Di **prev\_out** **n** adalah 1. Sejak kita mengindex dari 0, artinya saya ingin menghabiskannya pada output kedua dari transaksi itu.  
+Pada blockexplorer kita bisa dapat melihat address yang sesuai adalah: `mzK6Jy5mer3ABBxfHdcxXEChsn3mkv8qJv` and I can get the scriptSig from the address like this:
 
 ```cs
 var address = BitcoinAddress.Create("mzK6Jy5mer3ABBxfHdcxXEChsn3mkv8qJv");
 transaction.Inputs[0].ScriptSig = address.ScriptPubKey;
-```  
+```
 
-### Sign your transaction
+### Menandatangani Transaksi Anda
 
-Now that we have created the transaction, we must sign it. In other words, you will have to prove that you own the TxOut that you referenced in the input.  
+Jika anda telah dapat membuat transaksi, maka tentu kita harus bisa menandatanganinya. Artinya, anda harus bisa membuktikan bahwa anda memiliki TxOut yang telah anda referensikan dalam input.
 
-Signing can be [complicated](https://en.bitcoin.it/w/images/en/7/70/Bitcoin_OpCheckSig_InDetail.png), but we’ll make it simple.
+Penandatanganan ini [cukup rumit](https://en.bitcoin.it/w/images/en/7/70/Bitcoin_OpCheckSig_InDetail.png), namun kita coba untuk membuatnya lebih simpel.
 
-First let's revisit the **scriptSig** of **in**, how we can get it from code. Remember, we copypasted the address above from a blockexplorer, now let's get it from our QBitNinja transactionResponse:  
+Pertama coba kita tengok kembali **scriptSig** dari **in**, bagaimana kita bisa mendapatkan kode itu. Yang perlu diingat, kita  copypasted address tersebut dari blockexplorer. Sekarang, mari kita ambil kode itu dari QBitNinja transactionResponse:
 
 ```cs
 transaction.Inputs[0].ScriptSig =  bitcoinPrivateKey.ScriptPubKey;
-```  
+```
 
-Then you need to give your private key for signing:  
+Anda harus menggunakan private key anda untuk menandatangani:
 
 ```cs
 transaction.Sign(bitcoinPrivateKey, false);
-```  
+```
 
-### Propagate your transactions
-Congratulations, you have signed your first transaction! Your transaction is ready to roll! All that is left is to propagate it to the network so the miners can see it.  
-#### With QBitNinja:  
+### Broadcast Transaksi
+
+Selamat, karena anda telah berhasil menandatangani transaksi pertama anda! Sekarang tinggal bagaimana menyebar atau broadcas transaksi itu ke dalam jaringan \(network\), sehingga para penambang bisa mendengar transaksi tersebut.
+
+#### Menggunakan QBitNinja:
+
 ```cs
 BroadcastResponse broadcastResponse = client.Broadcast(transaction).Result;
 
@@ -252,9 +247,9 @@ else
     Console.WriteLine("Success! You can check out the hash of the transaciton in any block explorer:");
     Console.WriteLine(transaction.GetHash());
 }
-```  
+```
 
-#### With your own Bitcoin Core:  
+#### Menggunakan Bitcoin Core Anda:
 
 ```cs
 using (var node = Node.ConnectToLocal(network)) //Connect to the node
@@ -266,8 +261,9 @@ using (var node = Node.ConnectToLocal(network)) //Connect to the node
     node.SendMessage(new TxPayload(transaction));
     Thread.Sleep(500); //Wait a bit
 }
-```  
+```
 
-The **using** code block will take care of closing the connection to the node. That's it!
+Menggunakan kode block itu akan menangani koneksi yang terputus ke node. Itu saja.
 
-You can also connect directly to the Bitcoin network, however I advise you to connect to your own trusted node (faster and easier)  
+Anda juga dapat terhubung ke jaringan bitcoin secara langsung. Namun lebih baik anda terhubung pada node anda sendiri, agar lebih cepat dan mudah. 
+

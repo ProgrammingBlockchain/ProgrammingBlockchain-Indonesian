@@ -1,63 +1,65 @@
-# HiddenBitcoin: Managing keys (HD wallet) {#hiddenbitcoin-keystorage}  
+# HiddenBitcoin: Managemen key \(HD wallet\) {#hiddenbitcoin-keystorage}
 
-([nopara73](https://github.com/nopara73)) I am developing a privacy oriented Bitcoin wallet, called [HiddenWallet](https://github.com/nopara73/HiddenWallet). The [HiddenBitcoin](https://github.com/nopara73/HiddenBitcoin) library is the introduction of an other abstraction layer between NBitcoin and the user interface.  
+\([nopara73](https://github.com/nopara73)\) "Saya mengembangkan privasi yang berorientasi untuk wallet Bitcoin, disebut dengan [HiddenWallet](https://github.com/nopara73/HiddenWallet). Library [HiddenBitcoin](https://github.com/nopara73/HiddenBitcoin) adalah pengenalan dari abstraksi lain antara NBitcoin dan user interface."
 
-A Bitcoin wallet have three key functions and this case study will be structured around them:  
+Sebuah wallet Bitcoin mempunyai fungsi tiga key utama, dan pada studi kasus ini, akan membahas seputar hal tersebut:
 
-1. Securely stores keys and manages the access to them.  
-2. Monitors these keys, and other keys on The Blockchain.  
-3. Builds transactions and submits them.  
+1. Mengamankan penyimpanan key, dan mengelola akses.  
+2. Memonitor key, dan key lain pada Blockchain.  
+3. Membangun transaksi dan mempublikasikan transaksi tersebut.   
 
-In this lesson I am going to tackle the key storage function.  
-If you want to examine the code more extensively you can find the solution on [GitHub](https://github.com/nopara73/HiddenBitcoin).  
-If you just want to know how to quickly set it up and use it you can find my high level tutorial on [CodeProject](http://www.codeproject.com/Articles/1096320/HiddenBitcoin-High-level-Csharp-Bitcoin-wallet-lib).  
+Dalam pembelajaran ini, saya akan berusaha mengatasi fungsi penyimpanan key.   
+Jika anda ingin memeriksa kode secara lebih luas dan detail, anda dapat mencari solusi itu di [GitHub](https://github.com/nopara73/HiddenBitcoin).  
+Jika anda hanya ingin tahu saja bagaimana cara cepat untuk mengatur itu dan menggunakannya, anda dapat menemukan tutorial _high level_ saya di [CodeProject](http://www.codeproject.com/Articles/1096320/HiddenBitcoin-High-level-Csharp-Bitcoin-wallet-lib).
 
-**How high level is it?** In my opinion a GUI developer, designer should not be able to make too much mistakes. They should not know about inputs and outputs and scriptpubkeys. They should stick at the addresses, privatekeys and wallets level. Also NBitcoin should be fully abstracted away.  
+**High level yang bagaimana sebenarnya?** Menurut pendapat saya, pengembang GUI, desainer tidak harus banyak melakukan kesalahan. Mereka tidak harus tahu tentang input dan output dan juga scriptpubkeys. Mereka harus tetap berkisar pada addresses, privatekeys dan level wallet. NBitcoin akan dapat memudahkan anda.
 
-## Key storage design decisions  
+## Keputusan saat mendesain Key storage
 
-Now it is a great time to give you a template on what decisions have to be make for storing the keys and what to keep in mind while making them.  
+Sekarang adalah waktu yang tepat untuk memberikan anda template yang sesuai dengan keputusan anda untuk membuat sebuah ruang penyimpanan key \(key storage\), dan hal apa yang harus tetap anda ingat saat membangunnya. 
 
-### Using only one key  
+### Hanya menggunakan satu key
 
-This is a shortcut. There are not too many situations I can come up with where going down this road can be justified. Yet it is not impossible it will be the most suitable for your needs.  
-As a bad example here is an illustration for a Bitcoin wallet I have built, what only uses one key. I leave it to you to think of the consequences.  
+Ini hanya sebagai sebuah jalan pintas saja. Tidak terlalu banyak hal yang bisa menjelaskan mengapa cara ini perlu dilakukan. Meski demikian, mungkin saja hal ini akan cocok untuk kebutuhan anda.   
+Untuk sebuah contoh saja, ini adalah sebuah ilustrasi buruk dari sebuah wallet Bitcoin yang pernah saya buat, yang hanya menggunakan satu key saja. Saya menyerahkan keputusan kepada anda dengan segala konsekuensinya. 
 
-![](../assets/TransparentWallet2.png)  
+![](../assets/TransparentWallet2.png)
 
-### JBOK wallets  
+### Wallet JBOK
 
-It stands for **J**ust a **B**unch **O**f **K**eys. At the time of writing the reference client uses this method to store keys.  
-The problem with this the user has to periodically backup his wallet. Yet if you want to be able importing or dropping keys, changing password you need to use this or some kind of hybrid combination of this and a deterministic wallet. I decided not to use this since my HiddenWallet is trying to innovate towards privacy and I can have a more sound wallet structure without it.  
+Wallet ini adalah singkatan dari **J**ust a **B**unch **O**f **K**eys. Pada saat menuliskan ini, referensi dari klien menggunakan metode ini untuk dapat menyimpan key.   
+Masalah dengan wallet ini, pengguna harus mencadangkan \(backup\) wallet secara periodik. Jika anda ingin dapat mengimport key, dropping key, atau juga merubah password, anda mungkin akan membutuhkan beberapa kombinasi dari wallet ini dan wallet deterministik. Saya memutuskan untuk tidak menggunakan wallet ini karena HiddenWallet saya sedang mencoba untuk berinovasi terhadap privasi, dan saya mempunyai struktur wallet yang lebih bagus tanpa menggunakan wallet ini.
 
-### BIP38 (Part 2) - Untrusted third party key generator  
-Just to reiterate: the idea is to generate a PassphraseCode to the key generator. With this PassphraseCode, he will be able to generate encrypted keys on your behalf, without knowing your password, nor any private key.  
-HiddenWallet is a desktop wallet (and probably it is not going to change for a while). Thus I do not need to use an untrusted third party for key generation and key storage purposes. I decided not to implement it just yet.  
+### BIP38 \(Bagian 2\) - Generator key dari Untrusted third party 
 
-### SHD wallet  
+Untuk mengulangi saja: Ide ini untuk dapat generate PassphraseCode kepada key generator. Sehingga dengan PassphraseCode, dapat digunakan untuk generate key yang terenkripsi atas nama anda, tanpa harus mengetahui password anda, maupun private key anda.   
+HiddenWallet adalah sebuah wallet desktop \(mungkin tidak akan berubah untuk sementara waktu\). Oleh karena itu saya tidak perlu menggunakan pihak ketiga untuk dapat melakukan generate key maupun untuk menyimpan key. Saya memutuskan untuk tidak menerapkan dulu hal ini. 
 
-This is the wallet structure I have implemented. Ok, you got me, I just came up with this word. It does not exist and nobody uses it. But in my mind it stands for **S**tealth and **H**ierarchical **D**eterministic wallet. It is the best way to describe what I built.  
-Before I get into the code I would like to note I have only implemented the Stealth part of it, becuase it was a low hanging fruit. I am not sure stealth addresses will have any use in the future of Bitcoin.  
+### Wallet SHD
 
-A stealth address looks like this: ```waPXAvDCDGv8sXYRY6XDEymDGscYeepXBV5tgSDF1JHn61rzNk4EXTuBfx22J2W9rPAszXFmPXwD2m52psYhXQe5Yu1cG26A7hkPxs```  
+Struktur wallet ini yang telah saya terapkan. Dalam benak saya, wallet itu adalah singkatan dari **S**tealth and **H**ierarchical **D**eterministic wallet. Dan itu manjadi cara yang bagus untuk menjelaskan apa yang coba saya kembangkan.   
+Sebelum masuk dan menjelaskan tentang pengkodeannya, saya ingin memberikan catatan terlebih dahulu, bahwa saya hanya mengimplementasikan bagian _**Stealth**_ saja. Karena mudah seperti menggapai sebuah buah di pohon yang rendah. Meski begitu, saya tidak begitu yakin apakah stealth addresses akan banyak digunakan di masa mendatang Bitcoin.
 
-## Black box  
-I implemented a class, called it **Safe**. Using this class, as a black box is intuitive.  
+Pada sebuah address stealth, akan nampak seperti dibawah ini:  `waPXAvDCDGv8sXYRY6XDEymDGscYeepXBV5tgSDF1JHn61rzNk4EXTuBfx22J2W9rPAszXFmPXwD2m52psYhXQe5Yu1cG26A7hkPxs`
+
+## Black box
+
+Saya menerapkan sebuah class, dan meyebutnya dengan **Safe**. Menggunakan class tersebut sebagai sebuah intuitif dari black box.
 
 ```cs
 var network = Network.MainNet;
-```  
+```
 
-The **Network** is not **NBitcoin.Network**, since the GUI developer should not know it is using NBitcoin. Also you have more network options to choose from in NBitcoin, but HiddenBitcoin is cannot handle all of them. At the moment it supports ```MainNet``` and ```TestNet```.  
-The Network is an enum, it can be found under **HiddenBitcoin.DataClasses** namespace.  
+**Network** tersebut diatas bukanlah **NBitcoin.Network**, developer GUI tidak harus tahu apakah itu menggunakan NBitcoin. Anda mempunyai banyak pilihan network yang bisa digunakan di NBitcoin, namun HiddenBitcoin tidak bisa menangani semuanya. Pada saat ini, yang bisa support hanya `MainNet` dan `TestNet`.  
+Network \(jaringan\) adalah sebuah _**enum**_, dapat ditemukan dibawah **HiddenBitcoin.DataClasses** namespace.
 
 ```cs
 string mnemonic;
 Safe safe = Safe.Create(out mnemonic, "password", walletFilePath: @"Wallets\hiddenWallet.hid", network);
 Console.WriteLine(mnemonic);
-```  
+```
 
-You can also load or recover the safe:  
+Anda juga dapat me-load atau recover class safe:
 
 ```cs
 Safe loadedSafe = Safe.Load("password", walletFilePath: @"Wallets\hiddenWallet.hid");
@@ -65,9 +67,9 @@ if (network != loadedSafe.Network)
     throw new Exception("WrongNetwork");
 
 Safe recoveredSafe = Safe.Recover(mnemonic, "password", walletFilePath: @"Wallets\sameHiddenWallet.hid", network);
-```  
+```
 
-You can also get some keys out of the safe as strings:  
+Anda juga bisa mendapat beberapa key dari safe sebagai string:
 
 ```cs
 Console.WriteLine("Seed private key: " + safe.Seed);
@@ -81,7 +83,7 @@ Console.WriteLine("The stealth address: " + safe.StealthAddress);
 Console.WriteLine("Scan and spend private keys for stealth payments:");
 Console.WriteLine(loadedSafe.ScanPrivateKey);
 Console.WriteLine(loadedSafe.SpendPrivateKey);
-```  
+```
 
 ```
 Seed private key: xprv9s21ZrQH143K4RBm26TMm3qwTtR3Eyh22xDEN3TBebgfAvHPPSjxxFnFGDtnNHvqZ7pihGmAc8o9y1UvfEzcxSzyXAnmvTBowCNi69nXsqJ
@@ -95,13 +97,13 @@ The stealth address: vJmuFuLggpgzivm3UUjQguLhMA6C1SnYFJu5N6QkmXYRCU3nG1Ww36VcXy6
 Scan and spend private keys for stealth payments:
 L5CTS4U27umRfSBu2ztxsyUeMEYzJJk3HvCp3deSQBJWmRSUqCLg
 KyXveppF4Xm3KwJgG7EBSi6SxfMTkaDXYYmv7c7xWRcF7yUNpswp
-```  
+```
 
-**Note:** Ideally the seed keys are never used. It is a better practice if you start iterating through the keys with the getters of the safe.   
+**Catatan:** Idealnya seed keys tidak pernah digunakan. Ini adalah praktek yang lebih baik, jika anda mulai beriterasi melalui key, dengan menggunakan _safe_.
 
-## White box  
+## White box
 
-### Safe.Create  
+### Safe.Create
 
 ```cs
 // Creates a mnemonic, a seed, encrypts it and stores in the specified path.
@@ -113,11 +115,11 @@ public static Safe Create(out string mnemonic, string password, string walletFil
 
     return safe;
 }
-```  
+```
 
-```safe.SetSeed``` creates a mnemonic and set the ```_seedPrivateKey```. Finally it returns the mnemonic, so we can give it back to the user of the class.  
+`safe.SetSeed` menciptakan sebuah mnemonic dan mengatur `_seedPrivateKey`. Akhirnya dapat mengembalikan mnemonic, jadi dapat memberikan class tersebut kembali kepada pengguna. 
 
-![](../assets/RootKey.png)  
+![](../assets/RootKey.png)
 
 ```cs
 private ExtKey _seedPrivateKey;
@@ -129,10 +131,11 @@ private Mnemonic SetSeed(string password)
 
     return mnemonic;
 }
-```  
+```
 
-### safe.Save  
-Saves a wallet file, the question is what do we have inside it?  
+### safe.Save
+
+Saves disini adalah sebuah file wallet, pertanyaannya adalah apa yang kita simpan kedalam file ini?
 
 ```json
 {
@@ -142,27 +145,27 @@ Saves a wallet file, the question is what do we have inside it?
 }
 ```
 
-The wallet file is in JSON format. 
-We can get the chain code and private key from an ExtKey. It works the other way around too.  
+File wallet ini berupa format JSON. 
+Kita bisa mendapatkan kode rantai dan private key dari sebuah ExtKey. Ini bisa bekerja dan begitu juga pada cara yang lain. 
 
 ```cs
 Key privateKey = _seedPrivateKey.PrivateKey;
 byte[] chainCode = _seedPrivateKey.ChainCode;
-```  
+```
 
-Finally we encrypt the private key.  
+Dan pada bagian akhir kita mengenkripsi private key.
 
-![](../assets/EncryptedKey.png)  
+![](../assets/EncryptedKey.png)
 
 ```cs
 string encryptedBitcoinPrivateKeyString = privateKey.GetEncryptedBitcoinSecret(password, _network).ToWif();
 string chainCodeString = Convert.ToBase64String(chainCode);
 string networkString = network.ToString();
-```  
+```
 
 ### Safe.Load
 
-Let's reverse the save process.
+Mari kita balikkan dengan proses penyimpanan. 
 
 ```cs
 public static Safe Load(string password, string walletFilePath)
@@ -193,23 +196,24 @@ public static Safe Load(string password, string walletFilePath)
 
     return safe;
 }
-```  
+```
 
-Here is what happens in the Safe constructor:  
+Berikut apa yang terjadi pada constructor Safe:
 
 ```cs
 private Safe(string password, string walletFilePath, Network network)
 {
     SetNetwork(network);
-    
+
     SetSeed(password, mnemonicString);
-    
+
     WalletFilePath = walletFilePath;
 }
-```  
+```
 
 ### SetNetwork
-Inside the class we like to work with ```NBitcoin.Network```. So let's set a private member for that.  
+
+Di dalam class kita ingin agar bisa bekerja di`NBitcoin.Network`. Jadi mari kita membuat sebuah private member.
 
 ```cs
 private NBitcoin.Network _network;
@@ -221,9 +225,9 @@ private void SetNetwork(Network network)
         _network = NBitcoin.Network.TestNet;
     else throw new Exception("WrongNetwork");
 }
-```  
+```
 
-### Safe.Recover  
+### Safe.Recover
 
 ```cs
 public static Safe Recover(string mnemonic, string password, string walletFilePath, Network network)
@@ -232,9 +236,9 @@ public static Safe Recover(string mnemonic, string password, string walletFilePa
     safe.Save(password, walletFilePath, network);
     return safe;
 }
-```  
+```
 
-For this to work we have to expand the constructor:  
+Agar bisa bekerja, maka kita perlu memperluas constructor:
 
 ```cs
 private Safe(string password, string walletFilePath, Network network, string mnemonicString = null)
@@ -249,11 +253,11 @@ private Safe(string password, string walletFilePath, Network network, string mne
 
     WalletFilePath = walletFilePath;
 }
-```  
+```
 
 ### Getters
 
-Here is how I derive the keys. For my purposes it doesn't make too much sense to use some complicated keypath:  
+Berikut bagaimana saya bisa memperoleh key. Dalam hal ini, cukup tidak masuk akal jika menggunakan terlalu banyak keypath yang rumit:
 
 ```cs
 public PrivateKeyAddressPair GetPrivateKeyAddressPair(int index)
@@ -265,9 +269,9 @@ public PrivateKeyAddressPair GetPrivateKeyAddressPair(int index)
         Address = foo.ScriptPubKey.GetDestinationAddress(_network).ToWif()
     };
 }
-```  
+```
 
-### Stealth  
+### Stealth
 
 ```cs
 private Key _spendPrivateKey => _seedPrivateKey.PrivateKey;
@@ -279,5 +283,4 @@ public string StealthAddress => new BitcoinStealthAddress
     (_scanPrivateKey.PubKey, new[] {_spendPrivateKey.PubKey}, 1, null, _network
     ).ToWif();
 ```
-
 

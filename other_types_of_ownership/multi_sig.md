@@ -1,9 +1,9 @@
 ## Multi Sig {#multi-sig}
 
-It is possible to have shared ownership over coins.  
-For that you will create a ```ScriptPubKey``` that represents a **m-of-n multi sig**, this means in order to spend the coins, **m** private keys will need to sign on the **n** different public key provided.
+Multi Sig ini memungkinkan untuk sharing kepemilikan \(ownership\) koin.  
+Untuk itu, anda perlu membuat sebuah`ScriptPubKey` yang merepresentasikan sebuah **m-of-n multi sig.** Maksudnya, untuk mentransaksikan koin, **m** private key dibutuhkan untuk menandatangani pada publik key **n**.
 
-Let’s create a multi sig with Bob, Alice, and Satoshi, where two of them are needed to spend a coin.  
+Mari kita coba membuat sebuah multi sig pada contoh transaksi antara Bob, Alice, dan Satoshi, dimana dua dari ketiga orang tersebut membutuhkannya untuk mentransaksikan koin.
 
 ```cs
 Key bob = new Key();
@@ -15,35 +15,35 @@ var scriptPubKey = PayToMultiSigTemplate
     .GenerateScriptPubKey(2, new[] { bob.PubKey, alice.PubKey, satoshi.PubKey });
 
 Console.WriteLine(scriptPubKey);
-```  
+```
 
 ```
 2 0282213c7172e9dff8a852b436a957c1f55aa1a947f2571585870bfb12c0c15d61 036e9f73ca6929dec6926d8e319506cc4370914cd13d300e83fd9c3dfca3970efb 0324b9185ec3db2f209b620657ce0e9a792472d89911e0ac3fc1e5b5fc2ca7683d 3 OP_CHECKMULTISIG
-```  
+```
 
-As you can see, the ```scriptPubkey``` have the following form: ```<sigsRequired> <pubkeys…> <pubKeysCount> OP_CHECKMULTISIG```  
+Seperti yang dapat anda lihat,`scriptPubkey` mempunyai bentuk: `<sigsRequired> <pubkeys…> <pubKeysCount> OP_CHECKMULTISIG`
 
-The process for signing it is a little more complicated than just calling ```Transaction.Sign```, which does not work for multi sig.
+Proses penandatanganan tersebut sedikit lebih rumit daripada hanya`Transaction.Sign`, yang mungkin tidak dapat bekerja pada multi sig.
 
-Even if we will talk more deeply about the subject, let’s use the ```TransactionBuilder``` for signing the transaction.
+Meski kita membicarakan lebih dalam tentang hal ini, lebih baiknya kita menggunakan`TransactionBuilder` untuk menandatangani transaksinya.
 
-Imagine the multi-sig ```scriptPubKey``` received a coin in a transaction called ```received```:
+Bayangkan saja pada multi-sig `scriptPubKey` menerima koin transaksi, yang disebut dengan`received`:
 
 ```cs
 var received = new Transaction();
 received.Outputs.Add(new TxOut(Money.Coins(1.0m), scriptPubKey));
-```  
+```
 
-Bob and Alice agree to pay Nico 1.0 BTC for his services.
-So the get the ```Coin``` they received from the transaction:  
+Bob dan Alice setuju untuk membayar Nico 1.0 BTC untuk jasanya.
+Jadi untuk mendapat`Coin` mereka menerimanya dalam sebuah transaksi:
 
 ```cs
 Coin coin = received.Outputs.AsCoins().First();
-```  
+```
 
-![](../assets/coin.png)  
+![](../assets/coin.png)
 
-Then, with the ```TransactionBuilder```, create an **unsigned transaction**.  
+Lalu, dengan `TransactionBuilder`, membuat sebuah **unsigned transaction**.
 
 ```cs
 BitcoinAddress nico = new Key().PubKey.GetAddress(Network.Main);
@@ -53,9 +53,9 @@ Transaction unsigned =
       .AddCoins(coin)
       .Send(nico, Money.Coins(1.0m))
       .BuildTransaction(sign: false);
-```  
+```
 
-The transaction is not yet signed. Here is how Alice signs it:  
+Karena transaksi itu masih belum ditandatangani, maka begini cara Alice menandatanganinya:
 
 ```cs
 Transaction aliceSigned =
@@ -63,11 +63,11 @@ Transaction aliceSigned =
         .AddCoins(coin)
         .AddKeys(alice)
         .SignTransaction(unsigned);
-```  
+```
 
-![](../assets/aliceSigned.png)  
+![](../assets/aliceSigned.png)
 
-And then Bob:  
+Dilanjutkan dengan Bob:
 
 ```cs
 Transaction bobSigned =
@@ -75,24 +75,24 @@ Transaction bobSigned =
         .AddCoins(coin)
         .AddKeys(bob)
         .SignTransaction(aliceSigned);
-```  
+```
 
-![](../assets/bobSigned.png)  
+![](../assets/bobSigned.png)
 
-Now, Bob and Alice can combine their signature into one transaction.  
+Sekarang, Bob dan Alice dapat menggabungkan tanda tangan mereka pada satu transaksi saja.
 
 ```cs
 Transaction fullySigned =
     builder
         .AddCoins(coin)
         .CombineSignatures(aliceSigned, bobSigned);
-```  
+```
 
-![](../assets/fullySigned.png)  
+![](../assets/fullySigned.png)
 
 ```cs
 Console.WriteLine(fullySigned);
-```  
+```
 
 ```json
 {
@@ -114,13 +114,15 @@ Console.WriteLine(fullySigned);
   ]
 }
 
-```  
-The transaction is now ready to be sent on the network.
+```
 
-Even if the Bitcoin network supports multi sig as explained here, one question worth asking is: How can you ask to a user who has no clue about bitcoin to pay on satoshi/alice/bob multi sig, since such ```scriptPubKey``` can’t be represented by easy to use Bitcoin Address like we have seen before?
+Transaksi itupun sekarang siap untuk dimasukkan ke dalam jaringan.
 
-Don’t you think it would be cool if we could to represent such ```scriptPubKey``` as easily and compactly as a Bitcoin Address?
+Meski jaringan Bitcoin support untuk multi sig seperti yang dijelaskan di sini, ada satu pertanyaan yang penting: Bagaimana kita bertanya kepada pengguna yang tidak mengetahui cara untuk melakukan pembayaran dengan multi sig seperti pada transaksi antara satoshi\/alice\/bob, karena`scriptPubKey`tidak bisa merepresentasikan address bitcoin dengan mudah?
 
-Well, this is possible and it is called a **Bitcoin Script Address** also called Pay to Script Hash. (P2SH)
+Tidakkah anda berfikir akan menjadi bagus jika hal tersebut bisa merepresentasikan`scriptPubKey` dengan mudah sebagai Address Bitcoin?
 
-Nowadays, **native Pay To Multi Sig** as you have seen here, and **native P2PK**, are never used directly as such, they are wrapped into **Pay To Script Hash** payment.
+Hal itu memungkinkan bisa dilakukan, disebut dengan **Bitcoin Script Address** atau disebut juga Pay to Script Hash. \(P2SH\)
+
+Saat ini, **native Pay To Multi Sig** seperti yang anda lihat, dan **native P2PK**, belum pernah digunakan secara langsung, karena telah dibungkus menjadi **Pay To Script Hash**.
+

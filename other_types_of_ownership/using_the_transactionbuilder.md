@@ -1,38 +1,45 @@
-## Using the TransactionBuilder {#using-the-transactionbuilder}
+## Penggunaan TransactionBuilder {#using-the-transactionbuilder}
 
-You have seen how the **TransactionBuilder** works when you have signed your first **P2SH** and **multi-sig** transaction.  
+Anda telah melihat bagaimana **TransactionBuilder** bisa bekerja jika anda telah berhasil menandatangani **P2SH** pertama anda, dan transaksi **multi-sig**.
 
-We will see how you can harness its full power, for signing more complicated transactions.    
+Kita juga akan melihat bagaimana anda dapat memanfaatkannya secara penuh, untuk menandatangani transaksi yang lebih rumit.
 
-With the **TransactionBuilder** you can:  
-*   Spend any  
-  *   **P2PK**, **P2PKH**,  
-  *   **multi-sig**,  
-  *   **P2WPK**, **P2WSH**.  
-*   Spend any **P2SH** on the previous redeem script.  
-*   Spend **Stealth Coin** (DarkWallet).  
-*   Issue and transfer **Colored Coins** (open asset, following chapter).  
-*   Combine **partially signed transactions**.  
-*   Estimate the final **size** of an **unsigned transaction** and its **fees**.  
-*   Verify if a **transaction** is **fully signed**.  
+Dengan **TransactionBuilder** anda dapat:
 
-The goal of the **TransactionBuilder** is to take **Coins** and **Keys** as input, and return back a **signed** or **partially signed transaction**.  
+* Membuat berbagai:
 
-![](../assets/SignedTransaction.png)  
+  * **P2PK**, **P2PKH**,  
+  * **multi-sig**,  
+  * **P2WPK**, **P2WSH**.  
 
-The **TransactionBuilder** will figure out what **Coin** to use and what to sign by itself.  
+* Transaksi pengeluaran **P2SH** di script redem sebelumnya.
 
-![](../assets/TransactionBuilder.png)  
+* Transaksi pengeluaran seperti di **Stealth Coin** \(DarkWallet\).
 
-The usage of the builder is done in four steps:  
-*   You gather the **Coins** that spent,
-*   You gather the **Keys** that you own,
-*   You enumerate how much **Money** you want to send to what **scriptPubKey**,
-*   You build and sign the **transaction**,
-*   **Optional**: you give the **transaction** to somebody else, then he will sign or continue to build it.
+* Menyelesaikan permasalahan dan transfer di **Colored Coins** \(open asset, pada bab pembahasan berikutnya\).
 
-Now let’s gather some **Coins**, for that let us create a fake **transaction** with some funds on it.  
-Let’s say that the **transaction** has a **P2PKH**, **P2PK**, and **multi-sig** coin of Bob and Alice.
+* menggabungkan **sebagian penandatangan  transaksi**.  
+* Memperkirakan ukuran akhir \(**size\)** dari **unsigned transaction** dan juga biayanya \(**fees\)**.  
+* Verifikasi apakah **transaksi** tersebut betul-betul telah ditandatangani \(**fully signed\)**.  
+
+Tujuan **TransactionBuilder** adalah untuk mengambil **Koin** dan **Keys** sebagai input, lalu mengembalikannya menjadi sebuah transaksi yang telah ditandatangani **\(signed\)**, atau sebagian telah ditandatangani \(**partially signed transaction\)**.
+
+![](../assets/SignedTransaction.png)
+
+**TransactionBuilder** akan mencari tahu **Koin **yang akan digunakan untuk dapat ditandatangani dengan sendirinya.
+
+![](../assets/TransactionBuilder.png)
+
+Penggunaan _builder_ ini dilakukan dalam empat langkah:
+
+* Anda mengumpulkan **koin** yang akan dikeluarkan,
+* Anda mengumpulkan **Keys** yang anda miliki,
+* Anda menghitung berapa jumlah **Uang** yang ingin anda keluarkan untuk **scriptPubKey**,
+* Anda membuat dan menandatangani **transaksi**,
+* **Tambahan**: Anda dapat memberikan **transaksi** itu untuk orang lain, lalu ia akan menandatanganinya, atau meneruskan pembuatan transaksi tersebut.
+
+Sekarang mari kita mengumpulkan beberapa **koin **tersebut. Untuk itu, mari kita membuat sebuah transaksi palsu dengan mendanai sejumlah dana ke dalamnya.   
+Katakanlah pada **transaksi** tersebut mempunyai sebuah **P2PKH**, **P2PK**, dan koin **multi-sig** dari Bob dan Alice.
 
 ```cs
 // Create a fake transaction
@@ -50,22 +57,22 @@ init.Outputs.Add(new TxOut(Money.Coins(1m), alice.PubKey.Hash)); // P2PKH
 init.Outputs.Add(new TxOut(Money.Coins(1m), bobAlice));
 ```
 
-Now let’s say they want to use the ```coins``` of this transaction to pay Satoshi.  
+Sekarang mari kita katakan bahwa mereka ingin menggunakan`coins` pada transaksi itu untuk membayar Satoshi.
 
 ```cs
 var satoshi = new Key();
-```  
+```
 
-First they have to get their **Coins**.  
+Pertama, mereka harus mengumpulkan **Koin**.
 
 ```cs
 Coin[] coins = init.Outputs.AsCoins().ToArray();
 Coin bobCoin = coins[0];
 Coin aliceCoin = coins[1];
 Coin bobAliceCoin = coins[2];
-```  
+```
 
-Now let’s say ```bob``` wants to sends 0.2 BTC, ```alice``` 0.3 BTC, and they agree to use ```bobAlice``` to send 0.5 BTC.  
+Jadi sekarang katakanlah semisal `bob` ingin mengirim 0.2 BTC, `alice` 0.3 BTC, dan mereka berdua setuju untuk menggunakan`bobAlice` untuk mengirim total 0.5 BTC.
 
 ```cs
 var builder = new TransactionBuilder();
@@ -86,17 +93,17 @@ Transaction tx = builder
         .SetChange(bobAlice)
         .SendFees(Money.Coins(0.0001m))
         .BuildTransaction(sign: true);
-```  
+```
 
-Then you can verify it is fully signed and ready to send to the network.  
+Kemudian anda dapat memverifikasi tanda tangan itu sepenuhnya, dan siap mengirim transaksi itu ke dalam jaringan.
 
 ```cs
 Console.WriteLine(builder.Verify(tx)); // True
-```  
+```
 
-The nice thing about this model is that it works the same way for **P2SH, P2WSH, P2SH(P2WSH)**, and **P2SH(P2PKH)** except you need to create **ScriptCoin**.  
+Hal yang menyenangkan dari model ini adalah, karena dapat bekerja dengan cara yang sama untuk **P2SH, P2WSH, P2SH\(P2WSH\)**, dan **P2SH\(P2PKH\), **kecuali jika anda perlu untuk membuat **ScriptCoin**.
 
-![](../assets/ScriptCoinFromCoin.png)  
+![](../assets/ScriptCoinFromCoin.png)
 
 ```cs
 init = new Transaction();
@@ -104,9 +111,9 @@ init.Outputs.Add(new TxOut(Money.Coins(1.0m), bobAlice.Hash));
 
 coins = init.Outputs.AsCoins().ToArray();
 ScriptCoin bobAliceScriptCoin = coins[0].ToScriptCoin(bobAlice);
-```  
+```
 
-Then the signature:  
+Lalu signature:
 
 ```cs
 builder = new TransactionBuilder();
@@ -118,13 +125,13 @@ tx = builder
         .SendFees(Money.Coins(0.0001m))
         .BuildTransaction(true);
 Console.WriteLine(builder.Verify(tx)); // True
-```  
+```
 
-For **Stealth Coin**, this is basically the same thing. Except that, if you remember our introduction on Dark Wallet, I said that you need a **ScanKey** to see the **StealthCoin**.
+Untuk **Stealth Coin, **pada dasarnya sama. Kecuali memang, jika anda masih ingat pada bab perkenalan tentang Dark Wallet, saya mengatakan bahwa anda membutuhkan sebuah **ScanKey** untuk melihat **StealthCoin**.
 
-![](../assets/StealthCoin.png)  
+![](../assets/StealthCoin.png)
 
-Let’s create darkAliceBob stealth address as in previous chapter:  
+Kemudian mari dilanjutkan dengan membuat address _stealth darkAliceBob_ seperti di pembahasan sebelumnya:
 
 ```cs
 Key scanKey = new Key();
@@ -137,26 +144,26 @@ BitcoinStealthAddress darkAliceBob =
             bitfield: null,
             network: Network.Main
         );
-```  
+```
 
-Let’s say someone sent this transaction:  
+Jika seseorang mengirim transaksi ini:
 
 ```cs
 //Someone sent to darkAliceBob
 init = new Transaction();
 darkAliceBob
     .SendTo(init, Money.Coins(1.0m));
-```  
+```
 
-The scanner will detect the StealthCoin:  
+Scanner akan mendeteksi StealthCoin:
 
 ```cs
 //Get the stealth coin with the scanKey
 StealthCoin stealthCoin
     = StealthCoin.Find(init, darkAliceBob, scanKey);
-```  
+```
 
-And forward it to bob and alice, who will sign:  
+Dan meneruskan kepada bob dan alice, yang akan menandatangani:
 
 ```cs
 //Spend it
@@ -168,6 +175,7 @@ tx = builder
         .SendFees(Money.Coins(0.0001m))
         .BuildTransaction(true);
 Console.WriteLine(builder.Verify(tx)); // True
-```  
+```
 
-> **Note:** You need the scanKey for spending a StealthCoin
+> **Catatan:** Anda membutuhkan scanKey untuk transaksi pengeluaran StealthCoin
+

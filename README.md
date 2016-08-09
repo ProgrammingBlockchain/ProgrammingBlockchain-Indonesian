@@ -1,47 +1,37 @@
-![](assets/ProgrammingBlockchain.png)  
+![](/assets/ProgrammingBlockchain-1.png)
 
-#Indonesia  
+[Klik di sini untuk contoh kode](https://github.com/ProgrammingBlockchain/ProgrammingBlockchainCodeExamples/)
 
-[Click here for code examples](https://github.com/ProgrammingBlockchain/ProgrammingBlockchainCodeExamples/)
-## [Click here to read the book](https://programmingblockchain.gitbooks.io/programmingblockchain/content/)
+## [Klik di sini untuk membaca buku](https://programmingblockchain.gitbooks.io/programmingblockchain/content/)
 
-## Quick feedback
-If you notice any mistakes, and don't want to fix them yourself, open an issue [on the Github page of the book.](https://github.com/ProgrammingBlockchain/ProgrammingBlockchain)  
+## Feedback
 
-If you are reading this book with GitBook, you can also create a quick inline comment.
+Jika anda melihat adanya kesalahan, dan ingin memperbaikinya, buat issue [di halaman Github buku ini.](https://github.com/eb-ina/ProgrammingBlockchain)
 
-## How can I fix a typo? Aka quick contribution
-1. Find [the book on Github](https://github.com/ProgrammingBlockchain/ProgrammingBlockchain)
+Anda dapat mengirim komentar langsung jika anda membaca buku ini di GitBook.
+
+## Ingin memperbaiki kesalahan eja dengan cepat?
+
+1. Cari buku ini di [Github](https://github.com/eb-ina/ProgrammingBlockchain)
 2. Fork
 3. Edit file
-4. Make a pull request
+4. Lalu pull request
 
-## How can I write a new chapter? Aka extensive contribution
-1. Find [the book on Github](https://github.com/ProgrammingBlockchain/ProgrammingBlockchain)
+## Ingin menambah bab baru di buku ini?
+
+1. Cari buku ini di [Github](https://github.com/eb-ina/ProgrammingBlockchain)
 2. Fork
-3. Clone your fork
-4. Download and install [Gitbook editor](https://www.gitbook.com/)
-5. Open Gitbook editor
-6. Select "Import" and select the folder where you cloned your fork
+3. Clone fork tersebut
+4. Download dan install [Gitbook editor](https://www.gitbook.com/)
+5. Buka Gitbook editor
+6. Pilih menu "Import" dan pilih lokasi folder tempat _cloned_ berada
 7. Edit book
-8. Save files and Sync
-9. Make a pull request
+8. Save file dan Sync
+9. Lalu pull request
 
-## Enhancing your learning process  
-Making contributions while you are reading is a good way to learn faster. If you have a hard time understanding something, try to reword it and make a pull request for other readers.
+## Tentang Buku Ini
 
-You can also help [fixing issues](https://github.com/ProgrammingBlockchain/ProgrammingBlockchain/issues). (Protip for university students: a good GitHub profile is more valuable than a diploma in the job market.)
+Buku ini adalah terjemahan dari buku versi aslinya yang berjudul "[_**Programming Blockchain**_](https://github.com/ProgrammingBlockchain/ProgrammingBlockchain)". Kemudian diterjemahkan dalam bahasa Indonesia agar masyarakat dan komunitas Bitcoin di Indonesia juga bisa mempelajarinya.
 
-## How to feed us
-For every donation on this address, you will appear on [http://n.bitcoin.ninja/](http://n.bitcoin.ninja/).  
+Membaca dan mempraktekkannya  langsung menjadi cara yang bagus agar dapat belajar dengan cepat. Anda juga bisa membantu memperbaiki beberapa kesalahan yang ada, dengan cara memperbaikinya di Github.
 
-![1KF8kUVHK42XzgcmJF4Lxz4wcL5WDL97PB](assets/BookQr.png)  
-
-[1KF8kUVHK42XzgcmJF4Lxz4wcL5WDL97PB](https://www.smartbit.com.au/address/1KF8kUVHK42XzgcmJF4Lxz4wcL5WDL97PB) 
-
-## Links
-
-[The book on GitHub](https://github.com/ProgrammingBlockchain/ProgrammingBlockchain)  
-[The book on GitBook](https://www.gitbook.com/book/programmingblockchain/programmingblockchain) (You can download pdf, epub, mobi versions here.)  
-[Code examples on GitHub](https://github.com/ProgrammingBlockchain/ProgrammingBlockchainCodeExamples/)  
-[Hall of the Makers](http://n.bitcoin.ninja/) (Here are the true makers those succeeded to complete the challenges of this book.)

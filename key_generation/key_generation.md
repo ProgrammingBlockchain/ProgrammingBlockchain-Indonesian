@@ -1,95 +1,95 @@
-# Key generation and encryption {#key-generation-encryption}  
+# Generate Key dan Enkripsi {#key-generation-encryption}
 
-## Is it random enough? {#is-it-random-enough}
+## Sudah cukup acak? {#is-it-random-enough}
 
-When you call **new Key()**, under the hood, you are using a PRNG (Pseudo-Random-Number-Generator) to generate your private key. On windows, it uses the **RNGCryptoServiceProvider**, a .NET wrapper around the Windows Crypto API.
+Ketika anda membuat **new Key\(\)**, anda bisa menggunakan PRNG \(Pseudo-Random-Number-Generator\) untuk generate private key. Di windows, menggunakan **RNGCryptoServiceProvider**, sebuah wrapper .NET  API Crypto Windows.
 
-On Android, I use the **SecureRandom**, and in fact, you can use your own implementation with **RandomUtils.Random**.
+Jika di Android, saya gunakan **SecureRandom**, dan nyatanya, anda juga bisa menggunakan implementasi anda sendiri dengan **RandomUtils.Random**.
 
-On IOS, I have not implemented it and you need to create your **IRandom** implementation.
+Untuk IOS, saya belum mengimplementasikannya, dan anda harus membuat implementasi **IRandom.**
 
-For a computer, being random is hard. But the biggest issue is that it is impossible to know if a series of number is really random.
+Di komputer, untuk bisa memperoleh keacakan \(random\) cukup sulit. Masalah terbesarnya adalah, bahwa tidak mungkin untuk bisa mengetahui apakah seri angka tersebut benar-benar acak.
 
-If malware modifies your PRNG (and so, can predict the numbers you will generate), you won’t see it until it is too late.
+Jika ada sebuah malware berhasil memodifikasi PRNG anda \(maka, ia bisa memprediksi angka-angka yang nantinya akan di generate\), anda tidak bisa melihat hal itu, hingga menyadari ternyata sudah terlambat.
 
-It means that a cross platform and naïve implementation of PRNG (like using the computer’s clock combined with CPU speed) is dangerous. But you won’t see it until it is too late.
+Artinya, implementasi PRNG _cross platform_ \(seperti menggunakan jam komputer yang digabungkan dengan kecepatan CPU\) cukup berbahaya. Karena anda tidak bisa melihatnya.
 
-For performance reasons, most PRNG works the same way: a random number, called **Seed**, is chosen, then a predictable formula generates the next numbers each time you ask for it.
+untuk alasan kinerja, kebanyakan PRNG bekerja dengan cara yang sama: serangkaian angka acak, yang disebut dengan **Seed**, setelah dipilih, lalu formula yang terprediksi itu menggenerate angka berikutnya setiap kali anda membutuhkannya.
 
-The amount of randomness of the seed is defined by a measure we call **Entropy**, but the amount of **Entropy** also depends on the observer.
+Jumlah keacakan _seed_ ditentukan oleh sebuah ukuran yang disebut dengan **Entropy**, namun jumlah dari **Entropy** juga bergantung pada pengamat \(observer\).
 
-Let’s say you generate a seed from your clock time.  
-And let’s imagine that your clock has 1ms of resolution. (Reality is more ~15ms.)
+Katakanlah anda generate sebuah seed dari waktu jam anda.   
+bayangkan saja jika jam anda mempunyai resolusi 1ms. \(kenyataannya ternyata lebih dari ~15ms\)
 
-If your attacker knows that you generated the key last week, then your seed has  
-1000 \* 60 \* 60 \* 24 \* 7 = 604800000 possibilities.
+Jika penyerang mengetahui bahwa anda membuat key seminggu lalu, lalu seed anda memiliki  
+1000 \* 60 \* 60 \* 24 \* 7 = 604800000 kemungkinan.
 
-For such attacker, the entropy is LOG(604800000;2) = 29.17 bits.
+Penyerang tersebut, dengan entropy LOG\(604800000;2\) = 29.17 bits.
 
-And enumerating such number on my home computer took less than 2 seconds. We call such enumeration “brute forcing”.
+Memecahkan hal itu pada sebuah komputer membutuhkan waktu kurang dari 2 detik. …Kita menyebutnya dengan “brute forcing”.
 
-However let’s say, you use the clock time + the process id for generating the seed.  
-Let’s imagine that there are 1024 different process ids.
+Bisa dikatakan, menggunakan waktu + proses id untuk generate seed.  
+Mari kita bayangkan kalau ada 1024 yang berbeda id proses.
 
-So now, the attacker needs to enumerate 604800000 \* 1024 possibilities, which take around 2000 seconds.  
-Now, let’s add the time when I turned on my computer, assuming the attacker knows I turned it on today, it adds 86400000 possibilities.  
+Jadi sekarang, penyerangnya membutuhkan 604800000 \* 1024 kemungkinan, waktunya kurang lebih 2000 detik.  
+Sekarang, mari kita tambahkan waktu ketika saya menyalakan komputer, dengan asumsi, penyerang mengetahui saat saya menyalakan komputer, ia lalu menambahkan 86400000 kemungkinan.
 
-Now the attacker needs to enumerate 604800000 \* 1024 \* 86400000 = 5,35088E+19 possibilities.  
-However, keep in mind that if the attacker infiltrate my computer, he can get this last piece of info, and bring down the number of possibilities, reducing entropy.
+Penyerang harus memecahkan 604800000 \* 1024 \* 86400000 = 5,35088E+19 kemungkinan.  
+Namun, perlu diingat bahwa jika penyerang menyusup ke komputer saya, dia bisa mendapatkan potongan info terakhir itu, lalu menurunkan jumlah kemungkinan, dengan mengurangi entropi.
 
-Entropy is measured by **LOG(possibilities;2)** and so LOG(5,35088E+19; 2) = 65 bits.
+Entropy diukur dengan **LOG\(possibilities;2\)** dan LOG\(5,35088E+19; 2\) = 65 bits.
 
-Is it enough? Probably. Assuming your attacker does not know more information about the realm of possibilities.
+Apakah cukup? Mungkin saja. Dengan asumsi, penyerang tidak mengetahui info yang berkaitan dengan kemungkinan nyata yang ada.
 
-But since the hash of a public key is 20 bytes = 160 bits, it is smaller than the total universe of the addresses. You might do better.
+Tapi karena hash public key terdiri dari 20 bytes = 160 bits, jumlahnya lebih kecil dari total address yang ada di alam semesta. Sehingga mungkin lebih baik.
 
-> **Note:** Adding entropy is linearly harder, cracking entropy is exponentially harder
+> **Catatan:** Menambahkan entropy secara linier lebih sulit, dan cracking entropy secara exponensial menjadi lebih sulit.
 
-An interesting way of generating entropy quickly is by asking human intervention. (Moving the mouse.)
+Cara yang menarik untuk menghasilkan entropi dengan cepat adalah dengan menggunakan tangan anda. Maksudnya adalah dengan menggerakkan mouse.
 
-If you don’t completely trust the platform PRNG (which is [not so paranoic](http://android-developers.blogspot.fr/2013/08/some-securerandom-thoughts.html)), you can add entropy to the PRNG output that NBitcoin is using.  
+Jika anda tidak percaya pada platform PRNG sepenuhnya \(agar tidak menjadi [paranoid](http://android-developers.blogspot.fr/2013/08/some-securerandom-thoughts.html)\), anda bisa menambahkan entropi pada output PRNG yang digunakan di NBitcoin.
 
 ```cs
 RandomUtils.AddEntropy("hello");
 RandomUtils.AddEntropy(new byte[] { 1, 2, 3 });
 var nsaProofKey = new Key();
-```  
+```
 
-What NBitcoin does when you call **AddEntropy(data)** is:  
-**additionalEntropy = SHA(SHA(data) ^ additionalEntropy)**
+Pada NBitcoin, saat anda meminta **AddEntropy\(data\)** adalah:  
+**additionalEntropy = SHA\(SHA\(data\) ^ additionalEntropy\)**
 
-Then when you generate a new number:  
-**result = SHA(PRNG() ^ additionalEntropy)**
+Lalu jika anda generate angka baru adalah:  
+**result = SHA\(PRNG\(\) ^ additionalEntropy\)**
 
-## Key Derivation Function {#key-derivation-function}
+## Key Derivation **Function \(KDF\)** {#key-derivation-function}
 
-However, what is most important is not the number of possibilities. It is the time that an attacker would need to successfully break your key. That’s where KDF enters the game.
+Bagaimanapun, yang paling penting bukanlah besarnya jumlah kemungkinan. Karena ini adalah soal berapa lama waktu yang dibutuhkan seorang penyerang agar ia berhasil memecahkan key anda. Disinilah letak peranan KDF.
 
-KDF, or **Key Derivation Function** is a way to have a stronger key, even if your entropy is low.
+KDF, atau **Key Derivation Function** adalah cara yang terbaik untuk mempunyai sebuah key yang kuat, meski jika anda memiliki entropy rendah.
 
-Imagine that you want to generate a seed, and the attacker knows that there are 10.000.000 possibilities.  
-Such a seed would be normally cracked pretty easily.
+Bayangkan jika anda ingin generate sebuah _seed_, lalu penyerang tahu bahwa ada 10.000.000 kemungkinan.  
+_Seed_ tersebut biasanya cukup rentan.
 
-But what if you could make the enumeration slower?  
-A KDF is a hash function that waste computing resources on purpose.  
-Here is an example:
+Namun bagaimana jika anda bisa membuat cracking tersebut menjadi lebih lambat?  
+KDF adalah sebuah fungsi hash yang membuang resource computing sesuai yang diinginkan.  
+Contohnya seperti ini:
 
 ```cs
 var derived = SCrypt.BitcoinComputeDerivedKey("hello", new byte[] { 1, 2, 3 });
 RandomUtils.AddEntropy(derived);
-```  
+```
 
-Even if your attacker knows that your source of entropy is 5 letters, he will need to run Scrypt to check a possibility, which take 5 seconds on my computer.
+Meski jika penyerang mengetahui bahwa entropi anda terdiri dari 5 huruf, dia masih harus menjalankan Scrypt untuk memeriksa kemungkinannya, kurang lebih membutuhkan waktu 5 detik di komputer saya.
 
-The bottom line is: There is nothing paranoid into distrusting a PRNG, and you can mitigate an attack by both adding entropy and also using a KDF.  
-Keep in mind that an attacker can decrease entropy by gathering information about you or your system.  
-If you use the timestamp as entropy source, then he can decrease the entropy by knowing you generated the key last week, and that you only use your computer between 9am and 6pm.
+Keseluruhan gambaran ini adalah: Tidak perlu paranoid dan curiga pada PRNG, karena anda dapat mengurangi serangan dengan menambahkan entropi dan juga menggunakan KDF.  
+Namun perlu diingat, bahwa penyerang juga bisa menurunkan entropi itu dengan mengumpulkan informasi yang berkaitan dengan anda dan sistem anda.   
+Jika anda menggunakan timestamp sebagai sumber entropi, lalu dia bisa menurunkan entropi itu dengan cara mencoba mengetahui bahwa anda generate key itu seminggu lalu, dan bahwa anda hanya menggunakan komputer anda pada pukul 9am dan 6pm.
 
-In the previous part I talked quickly about a special KDF called **Scrypt.** As I said, the goal of a KDF is to make brute force costly.  
+Di bagian sebelumnya saya menyinggung tentang KDF, disebut dengan **Scrypt.** Seperti yang saya katakan, tujuan utama dari KDF adalah berusaha upaya _brute force_ itu haruslah membutuhkan biaya yang mahal. Sehingga cukup sulit baginya untuk dapat melakukan serangan itu.
 
-So it should be no surprise for you that a standard already exists for encrypting your private key with a password using a KDF. This is [BIP38](http://www.codeproject.com/Articles/775226/NBitcoin-Cryptography-Part).  
+Jadi anda seharusnya tidak akan terkejut jika standar yang digunakan untuk mengenkripsi private key anda menggunakan KDF. Berikut yang tertera pada [BIP38](http://www.codeproject.com/Articles/775226/NBitcoin-Cryptography-Part).
 
-![](../assets/EncryptedKey.png)  
+![](../assets/EncryptedKey.png)
 
 ```cs
 var privateKey = new Key();
@@ -101,116 +101,119 @@ var decryptedBitcoinPrivateKey = encryptedBitcoinPrivateKey.GetSecret("password"
 Console.WriteLine(decryptedBitcoinPrivateKey); // L1tZPQt7HHj5V49YtYAMSbAmwN9zRjajgXQt9gGtXhNZbcwbZk2r
 
 Console.ReadLine();
-```  
+```
 
-Such encryption is used in two different cases:  
+Enkripsi tersebut digunakan pada dua kasus yang berbeda:
 
-*   You don not trust your storage provider (they can get hacked)  
-*   You are storing the key on the behalf of somebody else (and you do not want to know his key)  
+* Jika anda tidak percaya untuk menggunakan provider ruang penyimpanan \(karena bisa di hacked\)  
+* Anda menyimpan key atas nama orang lain \(dan anda tidak ingin mengetahui key miliknya\)  
 
-If you own your storage, then encrypting at the database level might be enough.  
+Jika anda mempunyai ruang penyimpanan sendiri, maka level enkripsi database saja mungkin sudah cukup.
 
-Be careful if your server takes care of decrypting the key, an attacker might attempt to DDOS your server by forcing it to decrypt lots of keys.  
+Namun anda perlu berhati-hati jika server anda menangani _decrypting_ key, karena penyerang mungkin bisa melakukan serangan DDOS kepada server anda, dan memaksa decrypt banyak key.
 
-Delegate decryption to the ultimate user when you can.  
+## Hal yang baik sepanjang waktu {#like-the-good-ol-days}
 
-## Like the good ol’ days {#like-the-good-ol-days}
+Pertama, mengapa harus generati beberapa key?  
+Alasan utama adalah tentang privasi. Karena anda bisa melihat balance pada seluruh address, maka sebaiknya anda menggunakan address baru di setiap transaksi.
 
-First, why generating several keys?  
-The main reason is privacy. Since you can see the balance of all addresses, it is better to use a new address for each transaction.  
+Namun dalam prakteknya, anda memang juga dapat generate key untuk setiap kontak. Karena ini adalah cara yang termudah untuk mengidentifikasi para pembayar, tanpa harus membocorkan banyak privasi anda.
 
-However, in practice, you can also generate keys for each contact which makes this a simple way to identify your payer without leaking too much privacy.  
-
-You can generate key, like you did from the beginning:
+Anda bisa generate key, seperti yang telah anda lakukan di bagian awal:
 
 ```cs
 var privateKey = new Key()
-```  
+```
 
-However, you have two problems with that:  
+Namun nantinya akan ada dua masalah yang dihadapi jika kita ingin dapat generate address baru pada setiap transaksi:
 
-*   All backups of your wallet that you have will become outdated when you generate a new key.  
-*   You cannot delegate the address creation process to an untrusted peer.  
+* Semua backup wallet yang anda miliki menjadi usang saat anda generate key baru.  
+* Anda tidak bisa mendelegasikan proses pembuatan address pada rekan yang tidak bisa dipercaya _\(untrusted peer\)_.  
 
-If you are developing a web wallet and generate key on behalf of your users, and one user get hacked, she will immediately start suspecting you.  
+JIka anda sedang mengembangkan sebuah web wallet dan generate key atas nama pengguna, jika satu pengguna di hacked, maka dia akan mencurigai anda.
 
-## BIP38 (Part 2) {#bip38-part-2}
+## BIP38 \(Bagian 2\) {#bip38-part-2}
 
-We already saw BIP38 for encrypting a key, however this BIP is in reality two ideas in one document.  
+Kita sudah melihat tentang BIP38 untuk encrypt sebuah key, namun sebetulnya pada BIP ini, terdapat dua ide dalam satu dokumen.
 
-The second part of the BIP, shows how you can delegate Key and Address creation to an untrusted peer. It will fix one of our concerns.  
+Bagian kedua dari BIP ini, menunjukkan bagaimana anda bisa mendelegasikan Key dan pembuatan Address untuk _untrusted peer_. Hal ini dapat memperbaiki salah satu hal yang menjadi perhatian kami.
 
-**The idea is to generate a PassphraseCode to the key generator. With this PassphraseCode, he will be able to generate encrypted keys on your behalf, without knowing your password, nor any private key. ** 
+**Idenya adalah untuk dapat generate sebuah PassphraseCode pada key generator. Dengan PassphraseCode ini, akan mampu untuk generate keys yang terenkripsi atas nama anda, tanpa harus mengetahui password, ataupun juga private key anda. **
 
-This **PassphraseCode** can be given to your key generator in WIF format.  
+**PassphraseCode** ini, dapat berupa format WIF.
 
-> **Tip**: In NBitcoin, all types prefixed by “Bitcoin” are Base58 (WIF) data.  
+> **Tips**: Dalam NBitcoin, semua jenis prefix dari “Bitcoin” adalah Base58 \(WIF\).
 
-So, as a user that wants to delegate key creation, first you will create the **PassphraseCode**.
+Jadi, sebagai pengguna yang ingin mendelegasikan pembuatan key, anda terlebih dahulu membuat **PassphraseCode**.
 
-![](../assets/PassphraseCode.png)  
+![](../assets/PassphraseCode.png)
 
 ```cs
 var passphraseCode = new BitcoinPassphraseCode("my secret", Network.Main, null);
 ```
 
-**You then give this passphraseCode to a third party key generator.**
+**Lalu memberikan passphraseCode ini kepada** **key generator** **dari pihak ketiga \(third party\).**
 
-The third party will then generate new encrypted keys for you.
+Kemudian oleh third party tersebut, akan generate key baru yang telah terenkripsi kepada anda.
 
-![](../assets/PassphraseCodeToEncryptedKeys.png)  
+![](../assets/PassphraseCodeToEncryptedKeys.png)
 
 ```cs
 EncryptedKeyResult encryptedKeyResult = passphraseCode.GenerateEncryptedSecret();
-```  
+```
 
-This **EncryptedKeyResult** has lots of information:  
+Pada **EncryptedKeyResult **terdapat banyak informasi:
 
-![](../assets/EncryptedKeyResult.png)  
+![](../assets/EncryptedKeyResult.png)
 
-First: the **generated bitcoin address**,  
+Pertama: **generated address** **bitcoin**,
+
 ```cs
 var generatedAddress = encryptedKeyResult.GeneratedAddress; // 14KZsAVLwafhttaykXxCZt95HqadPXuz73
-```  
-then the **EncryptedKey** itself, (as we have seen in the previous, **Key Encryption** lesson),  
+```
+
+Lalu **EncryptedKey** itu sendiri, \(seperti yang kita lihat sebelumnya, tentang **enkripsi key**\),
+
 ```cs
 var encryptedKey = encryptedKeyResult.EncryptedKey; // 6PnWtBokjVKMjuSQit1h1Ph6rLMSFz2n4u3bjPJH1JMcp1WHqVSfr5ebNS
-```  
-and last but not the least, the **ConfirmationCode**, so that the third party can prove that the generated key and address correspond  to your password.
+```
+
+dan selanjutnya, **ConfirmationCode**, jadi pihak ketiga dapat membuktikan bahwa key yang digenerate dan address yang sesuai akan cukup efektif bagi password anda.
+
 ```cs
 var confirmationCode = encryptedKeyResult.ConfirmationCode; // cfrm38VUcrdt2zf1dCgf4e8gPNJJxnhJSdxYg6STRAEs7QuAuLJmT5W7uNqj88hzh9bBnU9GFkN
-```  
+```
 
-As the owner, once you receive this information, you need to check that the key generator did not cheat by using **ConfirmationCode.Check**, then get your private key with your password:
+Sebagai pemilik, anda juga akan menerima informasi ini. Anda perlu memeriksa key generator itu tidak menipu anda dengan menggunakan **ConfirmationCode.Check**, lalu ambil private key anda menggunakan password:
 
 ```cs
 Console.WriteLine(confirmationCode.Check("my secret", generatedAddress)); // True
 var bitcoinPrivateKey = encryptedKey.GetSecret("my secret");
 Console.WriteLine(bitcoinPrivateKey.GetAddress() == generatedAddress); // True
 Console.WriteLine(bitcoinPrivateKey); // KzzHhrkr39a7upeqHzYNNeJuaf1SVDBpxdFDuMvFKbFhcBytDF1R
-```  
+```
 
-So, we have just seen how the third party can generate encrypted key on your behalf, without knowing your password and private key.
+Jadi, sekarang anda telah melihat bagaimana third party dapat melakukan generate key terenkripsi atas nama anda, tanpa harus mengetahui password dan private key anda.
 
-![](../assets/ThirdPartyKeyGeneration.png)  
+![](../assets/ThirdPartyKeyGeneration.png)
 
-However, one problem remains:
+Tapi ingat, masih ada satu masalah tersisa:
 
-*   All backups of your wallet that you have will become outdated when you generate a new key.
+* Semua backup wallet anda akan jadi usang saat anda generate key baru.
 
-BIP 32, or Hierarchical Deterministic Wallets (HD wallets) proposes another solution, and is more widely supported.
+BIP 32, atau Hierarchical Deterministic Wallets \(wallet HD\) dapat menjadi solusi, dan cukup support secara luas.
 
-## HD Wallet (BIP 32) {#hd-wallet-bip-32}
+## HD Wallet \(BIP 32\) {#hd-wallet-bip-32}
 
-Let’s keep in mind the problems that we want to resolve:
+Tetaplah mengingat tentang masalah-masalah yang ingin kita pecahkan:
 
-*   Prevent outdated backups
-*   Delegating key / address generation to an untrusted peer
+* Menjaga agar backup tidak usang
+* Delegasi key \/ address kepada untrusted peer
 
-A “Deterministic” wallet would fix our backup problem. With such wallet, you would have to save only the seed. From this seed, you can generate the same series of private keys over and over.  
+Sebuah wallet “Deterministic” akan menangani masalah backup. Dengan wallet semacam ini, anda cukup hanya menyimpan seed saja. Dari seed tersebut, anda bisa generate seri private key yang sama berulang kali.
 
-This is what the “Deterministic” stands for.  
-As you can see, from the master key, I can generate new keys:  
+Itu adalah kegunaan wallet “Deterministic”.  
+Seperti yang bisa anda lihat, dari master key, saya bisa generate key baru:
 
 ```cs
 ExtKey masterKey = new ExtKey();
@@ -220,7 +223,7 @@ for (int i = 0; i < 5; i++)
     ExtKey key = masterKey.Derive((uint)i);
     Console.WriteLine("Key " + i + " : " + key.ToString(Network.Main));
 }
-```  
+```
 
 ```
 Master key : xprv9s21ZrQH143K3JneCAiVkz46BsJ4jUdH8C16DccAgMVfy2yY5L8A4XqTvZqCiKXhNWFZXdLH6VbsCsqBFsSXahfnLajiB6ir46RxgdkNsFk
@@ -230,15 +233,15 @@ Key 2 : xprv9tvBA4Kt8UTuLoEZPpW9fBEzC3gfTdj6QzMp8DzMbAeXgDHhSMmdnxSFHCQXycFu8Fcq
 Key 3 : xprv9tvBA4Kt8UTuPwJQyxuZoFj9hcEMCoz7DAWLkz9tRMwnBDiZghWePdD7etfi9RpWEWQjKCM8wHvKQwQ4uiGk8XhdKybzB8n2RVuruQ97Vna
 Key 4 : xprv9tvBA4Kt8UTuQoh1dQeJTXsmmTFwCqi4RXWdjBp114rJjNtPBHjxAckQp3yeEFw7Gf4gpnbwQTgDpGtQgcN59E71D2V97RRDtxeJ4rVkw4E
 Key 5 : xprv9tvBA4Kt8UTuTdiEhN8iVDr5rfAPSVsCKpDia4GtEsb87eHr8yRVveRhkeLEMvo3XWL3GjzZvncfWVKnKLWUMNqSgdxoNm7zDzzD63dxGsm
-```  
+```
 
-You only need to save the **masterKey**, since you can generate the same suite of private keys over and over.  
+Anda hanya cukup menyimpan saja **masterKey**, karena anda dapat generate private key yang sama berulang kali.
 
-As you can see, these keys are **ExtKey** and not **Key** as you are used to. However, this should not stop you since you have the real private key inside:  
+Seperti yang bisa dilihat disini, key ini adalah **ExtKey** dan bukan **Key** yang biasa anda gunakan. Namun, ini tidak menjadi penghalang karena anda mempunyai private key yang sebenarnya di dalamnya:
 
-![](../assets/ExtKey.png)  
+![](../assets/ExtKey.png)
 
-You can go back from a **Key** to an **ExtKey** by supplying the **Key** and the **ChainCode** to the **ExtKey** constructor. This works as follows:  
+Anda bisa kembali pada sebuah **Key** ke **ExtKey** dengan memberi **Key** lalu **ChainCode** kepada kontruksi **ExtKey**. dan ini akan dapat bekerja seperti dibawah ini:
 
 ```cs
 ExtKey extKey = new ExtKey();
@@ -246,13 +249,13 @@ byte[] chainCode = extKey.ChainCode;
 Key key = extKey.PrivateKey;
 
 ExtKey newExtKey = new ExtKey(key, chainCode);
-```  
+```
 
-The **base58** type equivalent of **ExtKey** is called **BitcoinExtKey**.
+Type **base58** sama dengan **ExtKey,** disebut dengan **BitcoinExtKey**.
 
-But how can we solve our second problem: delegating address creation to a peer that can potentially be hacked (like a payment server)?
+Namun bagaimana cara kita menyelesaikan masalah kedua? untuk mendelegasikan pembuatan address kepada peer, yang sebenarnya cukup berpotensi dapat di hacked \(seperti pada server payment\)?
 
-The trick is that you can “neuter” your master key, then you have a public (without private key) version of the master key. From this neutered version, a third party can generate public keys without knowing the private key.
+Triknya, anda bisa melakukan “neuter” dari master key anda, lalu anda mempunyai versi public key \(tanpa private key\) dari master key. Pada versi "neuter" ini, pihak ketiga dapat generate public key tanpa mengetahui private key.
 
 ```cs
 ExtPubKey masterPubKey = masterKey.Neuter();
@@ -263,87 +266,84 @@ for (int i = 0 ; i < 5 ; i++)
 }
 ```
 
-```PubKey 0 : xpub67uQd5a6WCY6A7NZfi7yGoGLwXCTX5R7QQfMag8z1RMGoX1skbXAeB9JtkaTiDoeZPprGH1drvgYcviXKppXtEGSVwmmx4pAdisKv2CqoWS
+\`\`\`PubKey 0 : xpub67uQd5a6WCY6A7NZfi7yGoGLwXCTX5R7QQfMag8z1RMGoX1skbXAeB9JtkaTiDoeZPprGH1drvgYcviXKppXtEGSVwmmx4pAdisKv2CqoWS
 PubKey 1 : xpub67uQd5a6WCY6CUeDMBvPX6QhGMoMMNKhEzt66hrH6sv7rxujt7igGf9AavEdLB73ZL6ZRJTRnhyc4BTiWeXQZFu7kyjwtDg9tjRcTZunfeR
 PubKey 2 : xpub67uQd5a6WCY6Dxbqk9Jo9iopKZUqg8pU1bWXbnesppsR3Nem8y4CVFjKnzBUkSVLGK4defHzKZ3jjAqSzGAKoV2YH4agCAEzzqKzeUaWJMW
 PubKey 3 : xpub67uQd5a6WCY6HQKya2Mwwb7bpSNB5XhWCR76kRaPxchE3Y1Y2MAiSjhRGftmeWyX8cJ3kL7LisJ3s4hHDWvhw3DWpEtkihPpofP3dAngh5M
 PubKey 4 : xpub67uQd5a6WCY6JddPfiPKdrR49KYEuXUwwJJsL5rWGDDQkpPctdkrwMhXgQ2zWopsSV7buz61e5mGSYgDisqA3D5vyvMtKYP8S3EiBn5c1u4
-```  
 
-So imagine that your payment server generates pubkey1, you can get the corresponding private key with your private master key.
+    So imagine that your payment server generate pubkey1, you can get the corresponding private key with your private master key.
 
-```cs
-masterKey = new ExtKey();
-masterPubKey = masterKey.Neuter();
+    ```cs
+    masterKey = new ExtKey();
+    masterPubKey = masterKey.Neuter();
 
-//The payment server generate pubkey1
-ExtPubKey pubkey1 = masterPubKey.Derive((uint)1);
+    //The payment server generate pubkey1
+    ExtPubKey pubkey1 = masterPubKey.Derive((uint)1);
 
-//You get the private key of pubkey1
-ExtKey key1 = masterKey.Derive((uint)1);
+    //You get the private key of pubkey1
+    ExtKey key1 = masterKey.Derive((uint)1);
 
-//Check it is legit
-Console.WriteLine("Generated address : " + pubkey1.PubKey.GetAddress(Network.Main));
-Console.WriteLine("Expected address : " + key1.PrivateKey.PubKey.GetAddress(Network.Main));
-```  
+    //Check it is legit
+    Console.WriteLine("Generated address : " + pubkey1.PubKey.GetAddress(Network.Main));
+    Console.WriteLine("Expected address : " + key1.PrivateKey.PubKey.GetAddress(Network.Main));
 
 ```
 Generated address : 1Jy8nALZNqpf4rFN9TWG2qXapZUBvquFfX
 Expected address : 1Jy8nALZNqpf4rFN9TWG2qXapZUBvquFfX
-```  
+```
 
-**ExtPubKey** is similar to **ExtKey** except that it holds a **PubKey** and not a **Key**.
+**ExtPubKey** mirip dengan **ExtKey** kecuali karena menyimpan **PubKey** dan bukan sebuah **Key**.
 
-![](../assets/ExtPubKey.png)  
+![](../assets/ExtPubKey.png)
 
-Now we have seen how Deterministic keys solve our problems, let’s speak about what the “hierarchical” is for.
+Anda telah melihat bagaimana key Deterministic dapat menyelesaikan persoalan kita. Mari sekarang kita bicara apa kegunaan dari “hierarchical”.
 
-In the previous exercise, we have seen that by combining master key + index we could generate another key. We call this process **Derivation**, master key is the **parent key**, and the generated key is called **child key**.
+Pada latihan sebelumnya, anda telah mengetahui bagaimana menggabungkan master key + index yang memungkinkan kita dapat key lain. Kita menyebut proses ini dengan proses **Derivation**, master key ini adalah **parent key**, sedangkan key hasil generated disebut dengan **child key**.
 
-However, you can also derivate children from the child key. This is what the “hierarchical” stands for.
+Namun, anda juga dapat derivate _children_ dari child key. Dan ini menjadi fungsi dari “hierarchical”.
 
-This is why conceptually more generally you can say: Parent Key + KeyPath => Child Key  
+Berikut adalah konseptual proses yang berlangsung secara umum: **Parent Key + KeyPath =&gt; Child Key**
 
-![](../assets/Derive1.png)  
+![](../assets/Derive1.png)
 
-![](../assets/Derive2.png)  
+![](../assets/Derive2.png)
 
-
-In this diagram, you can derivate Child(1,1) from parent in two different way:  
+Pada diagram tersebut, anda dapat derivate Child\(1,1\) dari _parent_ dengan dua cara yang berbeda:
 
 ```cs
 ExtKey parent = new ExtKey();
 ExtKey child11 = parent.Derive(1).Derive(1);
-```  
+```
 
-Or  
+Atau
 
 ```cs
 ExtKey parent = new ExtKey();
 ExtKey child11 = parent.Derive(new KeyPath("1/1"));
-```  
+```
 
-So in summary:  
+Jadi kesimpulannya:
 
-![](../assets/DeriveKeyPath.png)  
+![](../assets/DeriveKeyPath.png)
 
-It works the same for **ExtPubKey**.  
+Dan itu juga bekerja pada **ExtPubKey**.
 
-Why do you need hierarchical keys? Because it might be a nice way to classify the type of your keys for multiple accounts. More on [BIP44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
+Mengapa anda membutuhkan key hierarchical? Karena akan lebih bagus untuk mengklasifikasikan tipe key untuk multi account. Lebih jauh bisa dilihat di [BIP44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
-It also permits segmenting account rights across an organization.
+Bisa juga berguna untuk membagi hak akses per segmen account di sebuah organisasi.
 
-Imagine you are CEO of a company. You want control over all wallets, but you don’t want the Accounting department to spend the money from the Marketing department.
+Misalnya saja anda adalah CEO di sebuah perusahaan. Anda ingin dapat menangani seluruh wallet di perusahaan, namun anda tidak ingin departemen akutansi mengambil dana dari departemen marketing.
 
-So your first idea would be to generate one hierarchy for each department.  
+Jadi ide pertama yang dilakukan adalah dengan generate satu hierarchy untuk tiap departemen.
 
-![](../assets/CeoMarketingAccounting.png)  
+![](../assets/CeoMarketingAccounting.png)
 
-However, in such case, **Accounting** and **Marketing** would be able to recover the CEO’s private key.
+Namun, dalam kasus tertentu, departemen **Akutansi** dan **Marketing** mungkin dapat _recover_ private key milik CEO, jika sewaktu-waktu dibutuhkan.
 
-We define such child keys as **non-hardened**.  
+Maka kita dapat menentukkan child key sebagai **non-hardened**.
 
-![](../assets/NonHardened.png)  
+![](../assets/NonHardened.png)
 
 ```cs
 ExtKey ceoKey = new ExtKey();
@@ -355,16 +355,16 @@ ExtPubKey ceoPubkey = ceoKey.Neuter();
 //Recover ceo key with accounting private key and ceo public key
 ExtKey ceoKeyRecovered = accountingKey.GetParentExtKey(ceoPubkey);
 Console.WriteLine("CEO recovered: " + ceoKeyRecovered.ToString(Network.Main));
-```  
+```
 
 ```
 CEO: xprv9s21ZrQH143K2XcJU89thgkBehaMqvcj4A6JFxwPs6ZzGYHYT8dTchd87TC4NHSwvDuexuFVFpYaAt3gztYtZyXmy2hCVyVyxumdxfDBpoC
 CEO recovered: xprv9s21ZrQH143K2XcJU89thgkBehaMqvcj4A6JFxwPs6ZzGYHYT8dTchd87TC4NHSwvDuexuFVFpYaAt3gztYtZyXmy2hCVyVyxumdxfDBpoC
-```  
+```
 
-In other words, a **non-hardened key** can “climb” the hierarchy.**Non-hardened keys** should only be used for categorizing accounts that belongs to a **single control**.
+Dilain kata, **non-hardened key** dapat “naik” hirarkinya. **Non-hardened key** hanya dapat digunakan untuk memberikan kategori account yang mempunyai **single control **\(kontrol tunggal\).
 
-So in our case, the CEO should create a **hardened key**, so the accounting department will not be able to climb.
+Dalam hal ini, CEO harus membuat sebuah **hardened key**, sehingga departemen akutansi tidak dapat naik hirarkinya.
 
 ```cs
 ExtKey ceoKey = new ExtKey();
@@ -374,18 +374,18 @@ ExtKey accountingKey = ceoKey.Derive(0, hardened: true);
 ExtPubKey ceoPubkey = ceoKey.Neuter();
 
 ExtKey ceoKeyRecovered = accountingKey.GetParentExtKey(ceoPubkey); //Crash
-```  
+```
 
-You can also create hardened keys by via the **ExtKey.Derivate**(**KeyPath)**, by using an apostrophe after a child’s index:
+Anda juga dapat membuat hardened key melalui **ExtKey.Derivate**\(**KeyPath\)**, dengan kebalikannya, setelah index child:
 
 ```cs
 var nonHardened = new KeyPath("1/2/3");
 var hardened = new KeyPath("1/2/3'");
-```  
+```
 
-So let’s imagine that the Accounting Department generates 1 parent key for each customer, and a child for each of the customer’s payments.
+Jadi mari kita bayangkan jika departemen akutansi dapat generate 1 parent key untuk setiap customer, dan sebuah child untuk setiap pembayaran customer.
 
-As the CEO, you want to spend the money on one of these addresses. Here is how you would proceed.  
+Sebagai seorang CEO, anda mungkin ingin menggunakan dana pada salah satu address. Jadi begini prosesnya:
 
 ```cs
 ceoKey = new ExtKey();
@@ -395,60 +395,61 @@ int paymentId = 50;
 KeyPath path = new KeyPath(accounting + "/" + customerId + "/" + paymentId);
 //Path : "1'/5/50"
 ExtKey paymentKey = ceoKey.Derive(path);
-```  
+```
 
-## Mnemonic Code for HD Keys (BIP39) {#mnemonic-code-for-hd-keys-bip39}
+## Kode Mnemonic Untuk Key HD \(BIP39\) {#mnemonic-code-for-hd-keys-bip39}
 
-As you have seen, generating HD keys is easy. However, what if we want an easy way to transmit such key by telephone or hand writing?
+Setelah melihatnya sendiri, generate sebuah key HD cukup mudah. Namun, jika kita ingin cara yang termudah untuk dapat mentransmit key dengan sebuah telephone atau _hand writing_?
 
-Cold wallets like Trezor, generate the HD Keys from a sentence that can easily be written down. They call such sentence “the seed” or “mnemonic”. And it can eventually be protected by a password or a PIN.  
-![](../assets/Trezor.png)  
+Pada sebuah **_Cold wallets_** seperti **Trezor**, dapat generate key HD Keys dari sebuah kalimat yang bisa secara mudah dituliskan kembali. Mereka meyebut kalimat ini dengan “_the seed_” atau “_mnemonic_”. Dan itu di proteksi menggunakan sebuah password atau sebuah PIN.  
+![](../assets/Trezor.png)
 
-The language that you use to generate your easy to write sentence is called a **Wordlist**  
+Bahasa yang anda gunakan untuk generate kalimat yang mudah untuk dituliskan ini disebut dengan **Wordlist**
 
-![](../assets/RootKey.png)  
+![](../assets/RootKey.png)
+
 ```cs
 Mnemonic mnemo = new Mnemonic(Wordlist.English, WordCount.Twelve);
 ExtKey hdRoot = mnemo.DeriveExtKey("my password");
 Console.WriteLine(mnemo);
-```  
+```
 
-```minute put grant neglect anxiety case globe win famous correct turn link```  
+`minute put grant neglect anxiety case globe win famous correct turn link`
 
-Now, if you have the mnemonic and the password, you can recover the **hdRoot** key.  
+Sekarang, jika anda telah mempunyai _mnemonic_ dan _password_, maka anda dapat merecover key **hdRoot**.
 
 ```cs
 mnemo = new Mnemonic("minute put grant neglect anxiety case globe win famous correct turn link",
                 Wordlist.English);
 hdRoot = mnemo.DeriveExtKey("my password");
-```  
+```
 
-Currently supported **wordlist** are, English, Japanese, Spanish, Chinese (simplified and traditional).  
+Bahasa yang support untuk **wordlist** adalah, Inggris, Jepang, Spanyol, dan China.
 
 ## Dark Wallet {#dark-wallet}
 
-This name is unfortunate since there is nothing dark about it, and it attracts unwanted attention and concerns. Dark Wallet is a practical solution that fix our two initial problems:
+Nama yang digunakan tersebut tentu saja tidak berarti ada kegelapan disana, karena itu hanya dipakai untuk menarik perhatian saja. Dark Wallet dapat menjadi solusi praktis untuk dapat juga menyelesaikan dua persoalan kita diatas:
 
-*   Prevent outdated backups
-*   Delegating key / address generation to an untrusted peer
+* Menjaga backup agar tidak usang
+* Delegasi key \/ address kepada untrusted peer
 
-But it has a bonus killer feature.
+Namun juga mempunyai sebuah fitur yang bagus.
 
-You have to share only one address with the world (called **StealthAddress**), without leaking any privacy.
+Karena anda hanya perlu membagikan satu address saja kepada publik \(disebut dengan **StealthAddress**\), tanpa harus mengumbar privasi anda.
 
-Let’s remind us that if you share one **BitcoinAddress** with everybody, then all can see your balance by consulting the blockchain… That’s not the case with a **StealthAddress**.
+Mari kita ingat kembali, bahwa jika anda membagikan satu **AddressBitcoin** kepada orang lain, lalu mereka bisa melihat balance anda dengan cara melihatnya di blockchain… Namun tidak demikian jika menggunakan **StealthAddress**.
 
-This is a real shame it was labeled as **dark** since it solves partially the important problem of privacy leaking caused by the pseudo-anonymity of Bitcoin. A better name would have been: **One Address**.
+Sebenarnya agak disayangkan karena pada namanya menggunakan label "**dark", **karena pada dasarnya mampu menyelesaikan persoalan penting tentang privasi. Mungkin nama yang sebaiknya digunakan adalah: **One Address**.
 
-In Dark Wallet terminology, here are the different actors:
+Terminologi di dalam Dark Wallet, digambarkan dengan pelaku yang berbeda, seperti pada berikut ini:
 
-*   The **Payer** knows the **StealthAddress** of the **Receiver**
-*   The **Receiver** knows the **Spend Key**, a secret that will allow him to spend the coins he receives from one of such transaction.
-*   **Scanner** knows the **Scan Key**, a secret that allows him to detect the transactions those belong to the **Receiver**.
+* **Payer** _\(pengirim\)_ mengetahui **StealthAddress** **Receiver **_\(penerima\)_
+* **Receiver** mengetahui **Spend Key**, sebuah key rahasia yang memungkinkannya untuk mengirim koin yang diterimanya dari sebuah transaksi. 
+* **Scanner** mengetahui **Scan Key**, sebuah key rahasia yang memungkinkannya untuk mendeteksi transaksi kepada **Receiver**.
 
-The rest is operational details.Underneath, this **StealthAddress** is composed of one or several **Spend PubKey** (for multi sig), and one **Scan PubKey**.  
+Pada detail sisa proses operasionalnya, **StealthAddress** terdiri dari beberapa **Spend PubKey** \(untuk multi sig\), dan sebuah **Scan PubKey**.
 
-![](../assets/StealthAddress.png)  
+![](../assets/StealthAddress.png)
 
 ```cs
 var scanKey = new Key();
@@ -461,32 +462,32 @@ BitcoinStealthAddress stealthAddress
         signatureCount: 1,
         bitfield: null,
         network: Network.Main);
-```  
+```
 
-The **payer**, will take your **StealthAddress**, generate a temporary key called **Ephem Key** and will generate a **Stealth Pub Key**, from which the Bitcoin address to which the payment will be done is generated.  
+**Payer**, akan menggunakan **StealthAddress**, generate key sementara yang disebut dengan **Ephem Key** dan selanjutnya sebuah **Stealth Pub Key**, dari address Bitcoin address yang digunakan untuk pembayaran tersebut.
 
-![](../assets/EphemKey.png) 
+![](../assets/EphemKey.png)
 
-Then, he will package the **Ephem PubKey** in a **Stealth Metadata** object embedded that in the OP_RETURN of the transaction (as we have done for the first challenge)
+Lalu, dia akan menaruh **Ephem PubKey** itu dalam sebuah obyek _embedded_ **Stealth Metadata** yang berada di OP\_RETURN pada sebuah transaksi. \(sama seperti yang pernah kita lakukan pada tantangan latihan pertama\)
 
-He will also add the output to the generated bitcoin address. (the address of the **Stealth pub key**) 
+Dia juga akan menambahkan pada output address bitcoin yang di generate. \(address dari **Stealth pub key**\)
 
-![](../assets/StealthMetadata.png)  
+![](../assets/StealthMetadata.png)
 
 ```cs
 var ephemKey = new Key();
 Transaction transaction = new Transaction();
 stealthAddress.SendTo(transaction, Money.Coins(1.0m), ephemKey);
 Console.WriteLine(transaction);
-```  
+```
 
-The creation of the **EphemKey** being an implementation detail, you can omit it, NBitcoin will generate one automatically:  
+Pembuatan **EphemKey** diimplementasikan seperti pada detail berikut, anda bisa mencobanya, NBitcoin dapat generate secara otomatis:
 
 ```cs
 Transaction transaction = new Transaction();
 stealthAddress.SendTo(transaction, Money.Coins(1.0m));
 Console.WriteLine(transaction);
-```  
+```
 
 ```json
 {
@@ -508,32 +509,33 @@ Console.WriteLine(transaction);
     }
   ]
 }
-```  
+```
 
-Then the payer add and signs the inputs, then sends the transaction on the network.
+Lalu payer menambah dan menandatangani input, kemudian mengirim transaksi itu ke dalam jaringan.
 
-The **Scanner** knowing the **StealthAddress** and the **Scan Key** can recover the **Stealth PubKey** and so expected **BitcoinAddress** payment.  
+**Scanner** mengetahui **StealthAddress** dan **Scan Key, **dapat merecover **Stealth PubKey** dan juga **AddressBitcoin.**
 
-![](../assets/ScannerRecover.png)  
+![](../assets/ScannerRecover.png)
 
-Then the scanner checks if one of the output of the transaction correspond to such address. If it is, then **Scanner** notifies the **Receiver** about the transaction.
+Scanner memeriksa apakah satu dari output transaksi sesuai untuk addressnya. Jika sesuai, lalu **Scanner** memberikan notif pada **Receiver** tentang transaksi tersebut.
 
-The **Receiver** can then get the private key of the address with his **Spend Key**.  
+**Receiver** bisa mendapat private key dari address dengan **Spend Key**.
 
-![](../assets/ReceiverStealth.png)  
+![](../assets/ReceiverStealth.png)
 
-The code explaining how, as a Scanner, to scan a transaction and how, as a Receiver, to uncover the private key, will be explained later in the **TransactionBuilder** (Other types of ownership) part.
+Dari kode tersebut menjelaskan bagaimana sebuah Scanner, untuk melakukan scan sebuah transaksi, dan sebagai Receiver, untuk mendapat private key, selanjutnya akan dijelaskan lebih jauh di **TransactionBuilder** \(pada bagian Tipe Kepemilikan Lain\).
 
-It should be noted that a **StealthAddress** can have multiple **spend pubkeys**, in which case, the address represent a multi sig.
+Perlu dijadikan catatan bahwa sebuah **StealthAddress** dapat memiliki beberapa **spend pubkeys**, dalam hal ini, address merepresentasikan sebuah multi sig.
 
-One limit of Dark Wallet is the use of **OP_RETURN**, so we can’t easily embed arbitrary data in the transaction as we have done for in Bitcoin Transfer. (Current bitcoin rules allows only one OP_RETURN of 40 bytes, soon 80, per transaction)  
+Keterbatasan dari Dark Wallet adalah dalam penggunaan **OP\_RETURN**, jadi kita tidak dapat dengan begitu mudah untuk bisa _embed_ arbitrary data pada sebuah transaksi, seperti yang pernah kita lakukan dalam transfer sebelumnya. \(aturan bitcoin hanya memperbolehkan satu OP\_RETURN terdiri dari 40 bytes, lalu menjadi 80 byte, di tiap transaksi\)
 
-> ([Stackoverflow](http://bitcoin.stackexchange.com/a/29648/26859)) As I understand it, the "stealth address" is intended to address a very specific problem. If you wish to solicit payments from the public, say by posting a donation address on your website, then everyone can see on the block chain that all those payments went to you, and perhaps try to track how you spend them.  
+> \([Stackoverflow](http://bitcoin.stackexchange.com/a/29648/26859)\) As I understand it, the "stealth address" is intended to address a very specific problem. If you wish to solicit payments from the public, say by posting a donation address on your website, then everyone can see on the block chain that all those payments went to you, and perhaps try to track how you spend them.
 > 
-With a stealth address, you ask payers to generate a unique address in such a way that you (using some additional data which is attached to the transaction) can deduce the corresponding private key. So although you publish a single "stealth address" on your website, the block chain sees all your incoming payments as going to separate addresses and has no way to correlate them. (Of course, any individual payer knows their payment went to you, and can trace how you spend it, but they don't learn anything about other people's payments to you.)  
+> With a stealth address, you ask payers to generate a unique address in such a way that you \(using some additional data which is attached to the transaction\) can deduce the corresponding private key. So although you publish a single "stealth address" on your website, the block chain sees all your incoming payments as going to separate addresses and has no way to correlate them. \(Of course, any individual payer knows their payment went to you, and can trace how you spend it, but they don't learn anything about other people's payments to you.\)
 > 
-But you can get the same effect another way: just give each payer a unique address. Rather than posting a single public donation address on your website, have a button that generates a new unique address and saves the private key, or selects the next address from a long list of pre-generated addresses (whose private keys you hold somewhere safe). Just as before, the payments all go to separate addresses and there is no way to correlate them, nor for one payer to see that other payments went to you. 
+> But you can get the same effect another way: just give each payer a unique address. Rather than posting a single public donation address on your website, have a button that generates a new unique address and saves the private key, or selects the next address from a long list of pre-generated addresses \(whose private keys you hold somewhere safe\). Just as before, the payments all go to separate addresses and there is no way to correlate them, nor for one payer to see that other payments went to you.
 > 
-So the only difference with stealth addresses is essentially to move the chore of producing a unique address from the server to the client. Indeed, in some ways stealth addresses may be worse, since very few people use them, and if you are known to be one of them, it will be easier to connect stealth transactions with you.  
+> So the only difference with stealth addresses is essentially to move the chore of producing a unique address from the server to the client. Indeed, in some ways stealth addresses may be worse, since very few people use them, and if you are known to be one of them, it will be easier to connect stealth transactions with you.
 > 
-It doesn't provide "100% anonymity". The fundamental anonymity weakness of Bitcoin remains - that everyone can follow the chain of payments, and if you know something about one transaction or the parties to it, you can deduce something about where those coins came from or where they went.
+> It doesn't provide "100% anonymity". The fundamental anonymity weakness of Bitcoin remains - that everyone can follow the chain of payments, and if you know something about one transaction or the parties to it, you can deduce something about where those coins came from or where they went.
+
